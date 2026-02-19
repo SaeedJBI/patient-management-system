@@ -1,0 +1,2 @@
+-r requirements.txt
+django-extensions==3.2.3
