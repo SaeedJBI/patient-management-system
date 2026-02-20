@@ -21,8 +21,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # Our apps will go here as we create them
-    # 'core',
-    # 'branches',
+     'core',
+     'branches',
     # 'staff',
     # 'patients',
     # 'files',
@@ -76,7 +76,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Amman'
 USE_I18N = True
 USE_TZ = True
 
@@ -92,4 +92,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model - we'll set this in the next stage
-# AUTH_USER_MODEL = 'core.User'
+AUTH_USER_MODEL = 'core.User'
