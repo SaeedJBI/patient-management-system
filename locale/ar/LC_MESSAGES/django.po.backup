@@ -1,0 +1,256 @@
+﻿# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PMS\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+#: core/models.py
+msgid "email address"
+msgstr "البريد الإلكتروني"
+
+#: core/models.py
+msgid "username"
+msgstr "اسم المستخدم"
+
+#: core/models.py core/admin.py
+msgid "Personal info"
+msgstr "المعلومات الشخصية"
+
+#: core/models.py core/admin.py
+msgid "Permissions"
+msgstr "الصلاحيات"
+
+#: core/models.py core/admin.py
+msgid "Important dates"
+msgstr "التواريخ المهمة"
+
+#: core/admin.py
+msgid "Created At (Local)"
+msgstr "تاريخ الإنشاء (محلي)"
+
+#: branches/models.py
+msgid "Branch"
+msgstr "فرع"
+
+#: branches/models.py
+msgid "Branches"
+msgstr "الفروع"
+
+#: branches/admin.py
+msgid "Basic Information"
+msgstr "المعلومات الأساسية"
+
+#: branches/admin.py
+msgid "Address"
+msgstr "العنوان"
+
+#: branches/admin.py
+msgid "Contact"
+msgstr "جهة الاتصال"
+
+#: branches/admin.py
+msgid "Metadata"
+msgstr "البيانات الوصفية"
+
+#: branches/admin.py
+msgid "Created (Local)"
+msgstr "تاريخ الإنشاء (محلي)"
+
+# Django admin common strings
+msgid "Administration"
+msgstr "الإدارة"
+
+msgid "Welcome,"
+msgstr "مرحباً،"
+
+msgid "Log out"
+msgstr "تسجيل الخروج"
+
+msgid "Add"
+msgstr "إضافة"
+
+msgid "Change"
+msgstr "تغيير"
+
+msgid "View"
+msgstr "عرض"
+
+msgid "Delete"
+msgstr "حذف"
+
+# App and model names
+msgid "Core"
+msgstr "الأساسيات"
+
+msgid "Branches"
+msgstr "الفروع"
+
+msgid "Users"
+msgstr "المستخدمين"
+
+msgid "User"
+msgstr "مستخدم"
+
+# Model field names
+msgid "first name"
+msgstr "الاسم الأول"
+
+msgid "last name"
+msgstr "اسم العائلة"
+
+msgid "email"
+msgstr "البريد الإلكتروني"
+
+msgid "phone number"
+msgstr "رقم الهاتف"
+
+msgid "employee id"
+msgstr "رقم الموظف"
+
+msgid "language"
+msgstr "اللغة"
+
+msgid "is active"
+msgstr "نشط"
+
+msgid "is staff"
+msgstr "موظف"
+
+msgid "is superuser"
+msgstr "مدير عام"
+
+msgid "groups"
+msgstr "المجموعات"
+
+msgid "user permissions"
+msgstr "صلاحيات المستخدم"
+
+msgid "last login"
+msgstr "آخر دخول"
+
+msgid "date joined"
+msgstr "تاريخ الانضمام"
+
+msgid "created at"
+msgstr "تاريخ الإنشاء"
+
+msgid "updated at"
+msgstr "تاريخ التحديث"
+
+# Branch fields
+msgid "name"
+msgstr "الاسم"
+
+msgid "code"
+msgstr "الكود"
+
+msgid "city"
+msgstr "المدينة"
+
+msgid "state"
+msgstr "الولاية"
+
+msgid "postal code"
+msgstr "الرمز البريدي"
+
+msgid "country"
+msgstr "البلد"
+
+msgid "phone"
+msgstr "الهاتف"
+
+msgid "email"
+msgstr "البريد الإلكتروني"
+
+msgid "opened date"
+msgstr "تاريخ الافتتاح"
+
+msgid "created by"
+msgstr "تم الإنشاء بواسطة"
+
+# Action buttons
+msgid "Save"
+msgstr "حفظ"
+
+msgid "Save and add another"
+msgstr "حفظ وإضافة آخر"
+
+msgid "Save and continue editing"
+msgstr "حفظ ومواصلة التحرير"
+
+# Confirmation messages
+msgid "Are you sure?"
+msgstr "هل أنت متأكد؟"
+
+msgid "Yes, I'm sure"
+msgstr "نعم، أنا متأكد"
+
+msgid "No, take me back"
+msgstr "لا، عد بي للخلف"
+
+# Filters
+msgid "All"
+msgstr "الكل"
+
+msgid "Date"
+msgstr "التاريخ"
+
+msgid "Status"
+msgstr "الحالة"
+
+# Search
+msgid "Search"
+msgstr "بحث"
+
+msgid "Search by"
+msgstr "البحث بـ"
+
+# Pagination
+msgid "Page"
+msgstr "صفحة"
+
+msgid "of"
+msgstr "من"
+
+msgid "Next"
+msgstr "التالي"
+
+msgid "Previous"
+msgstr "السابق"
+
+# Language switcher
+msgid "English"
+msgstr "الإنجليزية"
+
+msgid "Arabic"
+msgstr "العربية"
+
+# Patient Management System title
+msgid "Patient Management System"
+msgstr "نظام إدارة المرضى"
+
+# Core app verbose names
+msgid "Core"
+msgstr "الأساسيات"
+
+msgid "Branches"
+msgstr "الفروع"
+
+msgid "Users"
+msgstr "المستخدمون"
+
+msgid "Groups"
+msgstr "المجموعات"

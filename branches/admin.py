@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from .models import Branch
 
 
@@ -15,16 +16,16 @@ class BranchAdmin(admin.ModelAdmin):
     ordering = ('name',)
     
     fieldsets = (
-        ('Basic Information', {
+        (_('Basic Information'), {
             'fields': ('name', 'code', 'is_active')
         }),
-        ('Address', {
+        (_('Address'), {
             'fields': ('address', 'city', 'state', 'postal_code', 'country')
         }),
-        ('Contact', {
+        (_('Contact'), {
             'fields': ('phone', 'email')
         }),
-        ('Metadata', {
+        (_('Metadata'), {
             'fields': ('opened_date', 'created_by', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
@@ -33,12 +34,11 @@ class BranchAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
     
     def get_local_created_at(self, obj):
-        """Display created_at in local timezone."""
         if obj.created_at:
             local_time = timezone.localtime(obj.created_at)
             return local_time.strftime("%b. %d, %Y, %I:%M %p")
         return "-"
-    get_local_created_at.short_description = 'Created (Local)'
+    get_local_created_at.short_description = _('Created (Local)')
     get_local_created_at.admin_order_field = 'created_at'
     
     def save_model(self, request, obj, form, change):

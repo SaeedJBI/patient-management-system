@@ -1,55 +1,48 @@
 from django.db import models
 from django.core.validators import RegexValidator
-from core.models import User  # Import our custom User model
+from django.utils.translation import gettext_lazy as _
+from core.models import User
 
 
 class Branch(models.Model):
     """
-    Branch model representing physical locations of the organization.
-    
-    Every piece of data in the system will be tied to a branch.
+    Branch model representing physical locations.
     """
     
-    # Basic Information
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(_('name'), max_length=100, unique=True)
     code = models.CharField(
+        _('code'),
         max_length=10, 
         unique=True,
-        validators=[RegexValidator(r'^[A-Z0-9]+$', 'Only uppercase letters and numbers allowed.')],
-        help_text="Unique branch code (e.g., NYC001, LAX002)"
+        validators=[RegexValidator(r'^[A-Z0-9]+$', _('Only uppercase letters and numbers allowed.'))],
+        help_text=_("Unique branch code (e.g., NYC001, LAX002)")
     )
     
-    # Contact Information
-    address = models.TextField()
-    city = models.CharField(max_length=50)
-    state = models.CharField(max_length=50)
-    postal_code = models.CharField(max_length=20)
-    country = models.CharField(max_length=50, default='USA')
+    address = models.TextField(_('address'))
+    city = models.CharField(_('city'), max_length=50)
+    state = models.CharField(_('state'), max_length=50)
+    postal_code = models.CharField(_('postal code'), max_length=20)
+    country = models.CharField(_('country'), max_length=50, default='USA')
     
-    phone = models.CharField(max_length=20)
-    email = models.EmailField(blank=True)
+    phone = models.CharField(_('phone'), max_length=20)
+    email = models.EmailField(_('email'), blank=True)
     
-    # Status and Metadata
-    is_active = models.BooleanField(default=True)
-    opened_date = models.DateField()
+    is_active = models.BooleanField(_('is active'), default=True)
+    opened_date = models.DateField(_('opened date'))
     
-    # Branch Manager (one staff member as manager)
-    # We'll create this relationship after we build the staff app
-    # manager = models.ForeignKey('staff.Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_branches')
-    
-    # Tracking
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
     created_by = models.ForeignKey(
         User, 
         on_delete=models.SET_NULL, 
         null=True, 
-        related_name='branches_created'
+        related_name='branches_created',
+        verbose_name=_('created by')
     )
     
     class Meta:
-        verbose_name = 'Branch'
-        verbose_name_plural = 'Branches'
+        verbose_name = _('Branch')
+        verbose_name_plural = _('Branches')
         ordering = ['name']
         indexes = [
             models.Index(fields=['code']),
@@ -61,11 +54,9 @@ class Branch(models.Model):
         return f"{self.name} ({self.code})"
     
     def get_full_address(self):
-        """Return formatted full address."""
         return f"{self.address}, {self.city}, {self.state} {self.postal_code}, {self.country}"
     
     def save(self, *args, **kwargs):
-        """Ensure branch code is always uppercase."""
         if self.code:
             self.code = self.code.upper()
         super().save(*args, **kwargs)

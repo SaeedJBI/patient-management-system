@@ -15,7 +15,6 @@ class Command(BaseCommand):
         
         # Create default branch if none exists
         if not Branch.objects.exists():
-            # Use timezone.now().date() instead of datetime.now().date()
             branch = Branch.objects.create(
                 name='Main Branch',
                 code='MAIN',
@@ -26,7 +25,7 @@ class Command(BaseCommand):
                 country='USA',
                 phone='+1-212-555-1234',
                 email='main@example.com',
-                opened_date=timezone.now().date(),  # This ensures timezone awareness
+                opened_date=timezone.now().date(),
                 is_active=True
             )
             self.stdout.write(self.style.SUCCESS(f'Created branch: {branch}'))
@@ -43,14 +42,21 @@ class Command(BaseCommand):
                 last_name='User',
                 employee_id='ADMIN001',
                 is_staff=True,
-                is_active=True
+                is_active=True,
+                language='en'  # Set default language
             )
             self.stdout.write(self.style.SUCCESS(f'Created admin user: {admin.email}'))
             
-            # Show the created time in local timezone
             local_created = timezone.localtime(admin.date_joined)
             self.stdout.write(f"Account created at: {local_created.strftime('%b. %d, %Y, %I:%M %p')}")
+            self.stdout.write(f"Default language set to: {admin.get_language_display()}")
         else:
             self.stdout.write('Admin user already exists')
+            # Update existing admin to have language if not set
+            admin = User.objects.filter(is_superuser=True).first()
+            if admin and not admin.language:
+                admin.language = 'en'
+                admin.save()
+                self.stdout.write(f"Updated {admin.email} with default language")
         
         self.stdout.write(self.style.SUCCESS('PMS initialization complete!'))

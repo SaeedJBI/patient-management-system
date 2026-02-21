@@ -1,0 +1,198 @@
+/* RTL overrides for when Arabic is active */
+
+/* Language switcher positioning */
+[dir="rtl"] .language-switcher {
+    text-align: left;
+    margin-right: 0;
+    margin-left: 10px;
+    float: left;
+}
+
+/* Bootstrap and utility class overrides */
+[dir="rtl"] .float-left {
+    float: right !important;
+}
+
+[dir="rtl"] .float-right {
+    float: left !important;
+}
+
+[dir="rtl"] .ml-auto {
+    margin-right: auto !important;
+    margin-left: 0 !important;
+}
+
+[dir="rtl"] .mr-auto {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+}
+
+[dir="rtl"] .text-left {
+    text-align: right !important;
+}
+
+[dir="rtl"] .text-right {
+    text-align: left !important;
+}
+
+[dir="rtl"] .navbar-nav {
+    padding-right: 0;
+    padding-left: initial;
+}
+
+[dir="rtl"] .dropdown-menu {
+    text-align: right;
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .dropdown-item {
+    text-align: right;
+}
+
+/* Admin specific RTL fixes */
+[dir="rtl"] .admin-interface .main {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+[dir="rtl"] .admin-interface #header {
+    padding-right: 20px;
+    padding-left: 20px;
+}
+
+[dir="rtl"] .admin-interface #user-tools {
+    float: left;
+    text-align: left;
+}
+
+[dir="rtl"] .admin-interface .module h2,
+[dir="rtl"] .admin-interface .module caption {
+    text-align: right;
+    padding-right: 10px;
+    padding-left: 0;
+}
+
+[dir="rtl"] .admin-interface .addlink {
+    background-position: right 0;
+    padding-right: 20px;
+    padding-left: 0;
+}
+
+[dir="rtl"] .admin-interface .changelink {
+    background-position: right 0;
+    padding-right: 20px;
+    padding-left: 0;
+}
+
+[dir="rtl"] .admin-interface .deletelink {
+    background-position: right 0;
+    padding-right: 20px;
+    padding-left: 0;
+}
+
+[dir="rtl"] .admin-interface .selector .selector-available h2,
+[dir="rtl"] .admin-interface .selector .selector-chosen h2 {
+    text-align: right;
+}
+
+[dir="rtl"] .admin-interface .selector .selector-chooser {
+    text-align: center;
+}
+
+[dir="rtl"] .admin-interface .selector a.selector-chooseall {
+    text-align: right;
+    background-position: right 0;
+    padding-right: 20px;
+    padding-left: 0;
+}
+
+[dir="rtl"] .admin-interface .selector a.selector-clearall {
+    text-align: right;
+    background-position: right 0;
+    padding-right: 20px;
+    padding-left: 0;
+}
+
+[dir="rtl"] .admin-interface .datetime {
+    margin-right: 0;
+    margin-left: 10px;
+}
+
+[dir="rtl"] .admin-interface .vTextField {
+    margin-right: 0;
+    margin-left: 10px;
+}
+
+/* Form field RTL adjustments */
+[dir="rtl"] .aligned label {
+    float: right;
+    padding: 0 0 3px 10px;
+    text-align: left;
+    margin-right: 0;
+    margin-left: 10px;
+}
+
+[dir="rtl"] .aligned .form-row {
+    padding: 3px 0 3px 10px;
+}
+
+[dir="rtl"] .submit-row {
+    text-align: left;
+}
+
+[dir="rtl"] .submit-row input {
+    margin-left: 5px;
+    margin-right: 0;
+}
+
+[dir="rtl"] .object-tools {
+    float: left;
+}
+
+[dir="rtl"] .object-tools li {
+    float: right;
+    margin: 0 0 0 5px;
+}
+
+/* Pagination RTL */
+[dir="rtl"] .paginator {
+    text-align: right;
+}
+
+[dir="rtl"] .paginator .this-page,
+[dir="rtl"] .paginator a:link,
+[dir="rtl"] .paginator a:visited {
+    padding: 2px 8px;
+    margin: 0 0 0 4px;
+}
+
+/* Calendar widget RTL */
+[dir="rtl"] .calendarbox {
+    right: auto;
+    left: 0;
+}
+
+[dir="rtl"] .calendar caption {
+    text-align: center;
+}
+
+[dir="rtl"] .calendar td {
+    text-align: center;
+}
+
+/* Timezone notice */
+[dir="rtl"] .timezonewarning {
+    float: left;
+}
+
+/* Messages and notifications */
+[dir="rtl"] .messagelist li {
+    background-position: 15px 50%;
+    padding: 4px 25px 4px 15px;
+}
+
+[dir="rtl"] .errornote {
+    background-position: 15px 50%;
+    padding: 4px 25px 4px 15px;
+}
