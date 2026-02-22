@@ -24,7 +24,8 @@ INSTALLED_APPS = [
     # Our apps
     'core',
     'branches',
-    'patients'
+    'patients',
+    'files',
 ]
 
 MIDDLEWARE = [
@@ -105,9 +106,27 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Media files (User uploads)
+# Media files (Public uploads - for non-sensitive data)
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Private file upload settings (Sensitive medical files)
+# Maximum file size (10MB - adjust based on needs)
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
+
+# Allowed file extensions
+ALLOWED_FILE_EXTENSIONS = [
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx',  # Documents
+    '.jpg', '.jpeg', '.png', '.gif', '.tiff',  # Images
+    '.txt', '.csv',  # Text files
+]
+
+# Private file storage paths (not publicly accessible)
+PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media'
+PRIVATE_MEDIA_URL = '/private-media/'  # This will be protected by views
+
+# Ensure private media directory exists
+PRIVATE_MEDIA_ROOT.mkdir(exist_ok=True)
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

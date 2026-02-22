@@ -1,13 +1,178 @@
-﻿msgid ""
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
 msgstr ""
-"Project-Id-Version: PMS\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-01 00:00+0000\n"
-"PO-Revision-Date: 2024-01-01 00:00+0000\n"
-"Last-Translator: \n"
-"Language-Team: English\n"
-"Language: en\n"
+"POT-Creation-Date: 2026-02-22 03:36+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: .\branches\admin.py:19
+msgid "Basic Information"
+msgstr ""
+
+#: .\branches\admin.py:22
+msgid "Address"
+msgstr ""
+
+#: .\branches\admin.py:25
+msgid "Contact"
+msgstr ""
+
+#: .\branches\admin.py:28
+msgid "Metadata"
+msgstr ""
+
+#: .\branches\admin.py:41
+msgid "Created (Local)"
+msgstr ""
+
+#: .\branches\models.py:12
+msgid "name"
+msgstr ""
+
+#: .\branches\models.py:14
+msgid "code"
+msgstr ""
+
+#: .\branches\models.py:17
+msgid "Only uppercase letters and numbers allowed."
+msgstr ""
+
+#: .\branches\models.py:18
+msgid "Unique branch code (e.g., NYC001, LAX002)"
+msgstr ""
+
+#: .\branches\models.py:21
+msgid "address"
+msgstr ""
+
+#: .\branches\models.py:22
+msgid "city"
+msgstr ""
+
+#: .\branches\models.py:23
+msgid "state"
+msgstr ""
+
+#: .\branches\models.py:24
+msgid "postal code"
+msgstr ""
+
+#: .\branches\models.py:25
+msgid "country"
+msgstr ""
+
+#: .\branches\models.py:27
+msgid "phone"
+msgstr ""
+
+#: .\branches\models.py:28
+msgid "email"
+msgstr ""
+
+#: .\branches\models.py:30
+msgid "is active"
+msgstr ""
+
+#: .\branches\models.py:31
+msgid "opened date"
+msgstr ""
+
+#: .\branches\models.py:33 .\core\models.py:31
+msgid "created at"
+msgstr ""
+
+#: .\branches\models.py:34 .\core\models.py:32
+msgid "updated at"
+msgstr ""
+
+#: .\branches\models.py:40
+msgid "created by"
+msgstr ""
+
+#: .\branches\models.py:44
+msgid "Branch"
+msgstr ""
+
+#: .\branches\models.py:45
+msgid "Branches"
+msgstr ""
+
+#: .\config\settings\base.py:83
+msgid "English"
+msgstr ""
+
+#: .\config\settings\base.py:84
+msgid "Arabic"
+msgstr ""
+
+#: .\core\admin.py:16
+msgid "Personal info"
+msgstr ""
+
+#: .\core\admin.py:17
+msgid "Permissions"
+msgstr ""
+
+#: .\core\admin.py:18
+msgid "Important dates"
+msgstr ""
+
+#: .\core\admin.py:35
+msgid "Created At (Local)"
+msgstr ""
+
+#: .\core\models.py:12
+msgid "email address"
+msgstr ""
+
+#: .\core\models.py:13
+msgid "phone number"
+msgstr ""
+
+#: .\core\models.py:14
+msgid "employee id"
+msgstr ""
+
+#: .\core\models.py:16
+msgid "language"
+msgstr ""
+
+#: .\core\models.py:23
+msgid "username"
+msgstr ""
+
+#: .\core\models.py:28
+msgid "Optional. Not used for login."
+msgstr ""
+
+#: .\core\models.py:38
+msgid "User"
+msgstr ""
+
+#: .\core\models.py:39
+msgid "Users"
+msgstr ""
+
+#: .\templates\admin\base_site.html:4
+msgid "PMS Admin"
+msgstr ""
+
+#: .\templates\admin\base_site.html:9
+msgid "Patient Management System"
+msgstr ""
+
+#: .\templates\components\language_switcher.html:26
+msgid "Change"
+msgstr ""

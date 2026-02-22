@@ -33,6 +33,7 @@ urlpatterns += [
         path('admin/', admin.site.urls),
         path('core/', include(('core.urls', 'core'), namespace='en_core')),
         path('patients/', include(('patients.urls', 'patients'), namespace='en_patients')),
+        path('files/', include(('files.urls', 'files'), namespace='en_files')),
     ])),
 ]
 
@@ -42,6 +43,7 @@ urlpatterns += [
         path('admin/', admin.site.urls),
         path('core/', include(('core.urls', 'core'), namespace='ar_core')),
         path('patients/', include(('patients.urls', 'patients'), namespace='ar_patients')),
+        path('files/', include(('files.urls', 'files'), namespace='ar_files')),
     ])),
 ]
 

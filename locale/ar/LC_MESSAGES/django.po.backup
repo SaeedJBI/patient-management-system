@@ -1,256 +1,273 @@
-﻿# SOME DESCRIPTIVE TITLE.
+# SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PMS\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-01 00:00+0000\n"
-"PO-Revision-Date: 2024-01-01 00:00+0000\n"
-"Last-Translator: \n"
-"Language-Team: Arabic\n"
-"Language: ar\n"
+"POT-Creation-Date: 2026-02-22 03:36+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
-
-#: core/models.py
-msgid "email address"
-msgstr "البريد الإلكتروني"
-
-#: core/models.py
-msgid "username"
-msgstr "اسم المستخدم"
-
-#: core/models.py core/admin.py
-msgid "Personal info"
-msgstr "المعلومات الشخصية"
-
-#: core/models.py core/admin.py
-msgid "Permissions"
-msgstr "الصلاحيات"
-
-#: core/models.py core/admin.py
-msgid "Important dates"
-msgstr "التواريخ المهمة"
-
-#: core/admin.py
-msgid "Created At (Local)"
-msgstr "تاريخ الإنشاء (محلي)"
-
-#: branches/models.py
-msgid "Branch"
-msgstr "فرع"
-
-#: branches/models.py
-msgid "Branches"
-msgstr "الفروع"
-
-#: branches/admin.py
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+#: .\branches\admin.py:19
 msgid "Basic Information"
-msgstr "المعلومات الأساسية"
+msgstr ""
 
-#: branches/admin.py
+#: .\branches\admin.py:22
 msgid "Address"
-msgstr "العنوان"
+msgstr ""
 
-#: branches/admin.py
+#: .\branches\admin.py:25
 msgid "Contact"
-msgstr "جهة الاتصال"
+msgstr ""
 
-#: branches/admin.py
+#: .\branches\admin.py:28
 msgid "Metadata"
-msgstr "البيانات الوصفية"
+msgstr ""
 
-#: branches/admin.py
+#: .\branches\admin.py:41
 msgid "Created (Local)"
-msgstr "تاريخ الإنشاء (محلي)"
+msgstr ""
 
-# Django admin common strings
-msgid "Administration"
-msgstr "الإدارة"
-
-msgid "Welcome,"
-msgstr "مرحباً،"
-
-msgid "Log out"
-msgstr "تسجيل الخروج"
-
-msgid "Add"
-msgstr "إضافة"
-
-msgid "Change"
-msgstr "تغيير"
-
-msgid "View"
-msgstr "عرض"
-
-msgid "Delete"
-msgstr "حذف"
-
-# App and model names
-msgid "Core"
-msgstr "الأساسيات"
-
-msgid "Branches"
-msgstr "الفروع"
-
-msgid "Users"
-msgstr "المستخدمين"
-
-msgid "User"
-msgstr "مستخدم"
-
-# Model field names
-msgid "first name"
-msgstr "الاسم الأول"
-
-msgid "last name"
-msgstr "اسم العائلة"
-
-msgid "email"
-msgstr "البريد الإلكتروني"
-
-msgid "phone number"
-msgstr "رقم الهاتف"
-
-msgid "employee id"
-msgstr "رقم الموظف"
-
-msgid "language"
-msgstr "اللغة"
-
-msgid "is active"
-msgstr "نشط"
-
-msgid "is staff"
-msgstr "موظف"
-
-msgid "is superuser"
-msgstr "مدير عام"
-
-msgid "groups"
-msgstr "المجموعات"
-
-msgid "user permissions"
-msgstr "صلاحيات المستخدم"
-
-msgid "last login"
-msgstr "آخر دخول"
-
-msgid "date joined"
-msgstr "تاريخ الانضمام"
-
-msgid "created at"
-msgstr "تاريخ الإنشاء"
-
-msgid "updated at"
-msgstr "تاريخ التحديث"
-
-# Branch fields
+#: .\branches\models.py:12
 msgid "name"
-msgstr "الاسم"
+msgstr ""
 
+#: .\branches\models.py:14
 msgid "code"
-msgstr "الكود"
+msgstr ""
 
+#: .\branches\models.py:17
+msgid "Only uppercase letters and numbers allowed."
+msgstr ""
+
+#: .\branches\models.py:18
+msgid "Unique branch code (e.g., NYC001, LAX002)"
+msgstr ""
+
+#: .\branches\models.py:21
+msgid "address"
+msgstr ""
+
+#: .\branches\models.py:22
 msgid "city"
-msgstr "المدينة"
+msgstr ""
 
+#: .\branches\models.py:23
 msgid "state"
-msgstr "الولاية"
+msgstr ""
 
+#: .\branches\models.py:24
 msgid "postal code"
-msgstr "الرمز البريدي"
+msgstr ""
 
+#: .\branches\models.py:25
 msgid "country"
-msgstr "البلد"
+msgstr ""
 
+#: .\branches\models.py:27
 msgid "phone"
-msgstr "الهاتف"
+msgstr ""
 
+#: .\branches\models.py:28
 msgid "email"
-msgstr "البريد الإلكتروني"
+msgstr ""
 
+#: .\branches\models.py:30
+msgid "is active"
+msgstr ""
+
+#: .\branches\models.py:31
 msgid "opened date"
-msgstr "تاريخ الافتتاح"
+msgstr ""
 
+#: .\branches\models.py:33 .\core\models.py:31
+msgid "created at"
+msgstr ""
+
+#: .\branches\models.py:34 .\core\models.py:32
+msgid "updated at"
+msgstr ""
+
+#: .\branches\models.py:40
 msgid "created by"
-msgstr "تم الإنشاء بواسطة"
+msgstr ""
 
-# Action buttons
-msgid "Save"
-msgstr "حفظ"
+#: .\branches\models.py:44
+msgid "Branch"
+msgstr ""
 
-msgid "Save and add another"
-msgstr "حفظ وإضافة آخر"
+#: .\branches\models.py:45
+msgid "Branches"
+msgstr ""
 
-msgid "Save and continue editing"
-msgstr "حفظ ومواصلة التحرير"
+#: .\config\settings\base.py:83
+msgid "English"
+msgstr ""
 
-# Confirmation messages
-msgid "Are you sure?"
-msgstr "هل أنت متأكد؟"
+#: .\config\settings\base.py:84
+msgid "Arabic"
+msgstr ""
 
-msgid "Yes, I'm sure"
-msgstr "نعم، أنا متأكد"
+#: .\core\admin.py:16
+msgid "Personal info"
+msgstr ""
 
-msgid "No, take me back"
-msgstr "لا، عد بي للخلف"
+#: .\core\admin.py:17
+msgid "Permissions"
+msgstr ""
 
-# Filters
-msgid "All"
-msgstr "الكل"
+#: .\core\admin.py:18
+msgid "Important dates"
+msgstr ""
 
-msgid "Date"
-msgstr "التاريخ"
+#: .\core\admin.py:35
+msgid "Created At (Local)"
+msgstr ""
 
-msgid "Status"
-msgstr "الحالة"
+#: .\core\models.py:12
+msgid "email address"
+msgstr ""
 
-# Search
-msgid "Search"
-msgstr "بحث"
+#: .\core\models.py:13
+msgid "phone number"
+msgstr ""
 
-msgid "Search by"
-msgstr "البحث بـ"
+#: .\core\models.py:14
+msgid "employee id"
+msgstr ""
 
-# Pagination
-msgid "Page"
-msgstr "صفحة"
+#: .\core\models.py:16
+msgid "language"
+msgstr ""
 
-msgid "of"
-msgstr "من"
+#: .\core\models.py:23
+msgid "username"
+msgstr ""
 
-msgid "Next"
-msgstr "التالي"
+#: .\core\models.py:28
+msgid "Optional. Not used for login."
+msgstr ""
 
-msgid "Previous"
-msgstr "السابق"
+#: .\core\models.py:38
+msgid "User"
+msgstr ""
 
-# Language switcher
+#: .\core\models.py:39
+msgid "Users"
+msgstr ""
+
+#: .\templates\admin\base_site.html:4
+msgid "PMS Admin"
+msgstr ""
+
+#: .\templates\admin\base_site.html:9
+msgid "Patient Management System"
+msgstr ""
+
+#: .\templates\components\language_switcher.html:26
+msgid "Change"
+msgstr ""
+
+# Core translations
 msgid "English"
 msgstr "الإنجليزية"
 
 msgid "Arabic"
 msgstr "العربية"
 
-# Patient Management System title
 msgid "Patient Management System"
 msgstr "نظام إدارة المرضى"
 
-# Core app verbose names
-msgid "Core"
-msgstr "الأساسيات"
+msgid "Change"
+msgstr "تغيير"
+
+msgid "Language"
+msgstr "اللغة"
+
+msgid "Patients"
+msgstr "المرضى"
 
 msgid "Branches"
 msgstr "الفروع"
 
-msgid "Users"
-msgstr "المستخدمون"
+msgid "Staff"
+msgstr "الموظفين"
 
-msgid "Groups"
-msgstr "المجموعات"
+msgid "Users"
+msgstr "المستخدمين"
+
+msgid "Personal info"
+msgstr "معلومات شخصية"
+
+msgid "Permissions"
+msgstr "الصلاحيات"
+
+msgid "Important dates"
+msgstr "تواريخ مهمة"
+
+msgid "patient"
+msgstr "مريض"
+
+msgid "patients"
+msgstr "مرضى"
+
+msgid "branch"
+msgstr "الفرع"
+
+msgid "national ID"
+msgstr "الرقم الوطني"
+
+msgid "medical record number"
+msgstr "رقم الملف الطبي"
+
+msgid "first name"
+msgstr "الاسم الأول"
+
+msgid "last name"
+msgstr "اسم العائلة"
+
+msgid "mother's name"
+msgstr "اسم الأم"
+
+msgid "date of birth"
+msgstr "تاريخ الميلاد"
+
+msgid "gender"
+msgstr "الجنس"
+
+msgid "Male"
+msgstr "ذكر"
+
+msgid "Female"
+msgstr "أنثى"
+
+msgid "mobile phone"
+msgstr "الهاتف المحمول"
+
+msgid "email"
+msgstr "البريد الإلكتروني"
+
+msgid "city"
+msgstr "المدينة"
+
+msgid "country"
+msgstr "البلد"
+
+msgid "active"
+msgstr "نشط"
+
+msgid "Full Name"
+msgstr "الاسم الكامل"
+
+msgid "Age"
+msgstr "العمر"
