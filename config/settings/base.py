@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     # Our apps
     'core',
     'branches',
+    'patients'
 ]
 
 MIDDLEWARE = [
