@@ -36,6 +36,7 @@ urlpatterns += [
         path('patients/', include(('patients.urls', 'patients'), namespace='en_patients')),
         path('files/', include(('files.urls', 'files'), namespace='en_files')),
         path('search/', include(('search.urls', 'search'), namespace='en_search')),
+        path('staff/', include(('staff.urls', 'staff'), namespace='en_staff')),
     ])),
 ]
 
@@ -48,6 +49,7 @@ urlpatterns += [
         path('patients/', include(('patients.urls', 'patients'), namespace='ar_patients')),
         path('files/', include(('files.urls', 'files'), namespace='ar_files')),
         path('search/', include(('search.urls', 'search'), namespace='ar_search')),
+        path('staff/', include(('staff.urls', 'staff'), namespace='ar_staff')),
     ])),
 ]
 

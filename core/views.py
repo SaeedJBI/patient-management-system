@@ -47,3 +47,11 @@ def set_language(request):
     
     # Fallback
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+def login_redirect(request):
+    """Redirect users based on their role after login."""
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            return redirect('admin:index')
+        return redirect('staff_dashboard')
+    return redirect('admin:login')

@@ -1,0 +1,158 @@
+{% extends "base_staff.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Doctor Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="h4 mb-3">
+            <i class="fas fa-user-md text-primary me-2"></i>
+            {% trans "Welcome, Dr." %} {{ request.user.first_name }}
+        </h2>
+        <p class="text-muted">
+            {% trans "You have" %} <strong>{{ patients_count }}</strong> {% trans "patients assigned" %}
+        </p>
+    </div>
+</div>
+
+<!-- Quick Stats - Mobile First Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="mobile-card text-center p-3">
+            <i class="fas fa-users fa-2x text-primary mb-2"></i>
+            <h3 class="h5 mb-1">{{ patients_count }}</h3>
+            <small class="text-muted">{% trans "Patients" %}</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="mobile-card text-center p-3">
+            <i class="fas fa-file-medical fa-2x text-success mb-2"></i>
+            <h3 class="h5 mb-1">{{ files_count }}</h3>
+            <small class="text-muted">{% trans "Recent Files" %}</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="mobile-card text-center p-3">
+            <i class="fas fa-calendar-check fa-2x text-info mb-2"></i>
+            <h3 class="h5 mb-1">5</h3>
+            <small class="text-muted">{% trans "Today's Appointments" %}</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="mobile-card text-center p-3">
+            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+            <h3 class="h5 mb-1">3</h3>
+            <small class="text-muted">{% trans "Pending Reports" %}</small>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions (Touch-friendly buttons) -->
+<div class="row g-2 mb-4">
+    <div class="col-12">
+        <h5 class="mb-3">{% trans "Quick Actions" %}</h5>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'staff:patient_search' %}" class="btn btn-outline-primary touch-btn w-100">
+            <i class="fas fa-search me-2"></i>{% trans "Find Patient" %}
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'staff:recent_patients' %}" class="btn btn-outline-success touch-btn w-100">
+            <i class="fas fa-clock me-2"></i>{% trans "Recent Patients" %}
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'staff:file_uploads' %}" class="btn btn-outline-info touch-btn w-100">
+            <i class="fas fa-upload me-2"></i>{% trans "My Uploads" %}
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <button class="btn btn-outline-warning touch-btn w-100" onclick="quickAddNote()">
+            <i class="fas fa-pen me-2"></i>{% trans "Quick Note" %}
+        </button>
+    </div>
+</div>
+
+<!-- Recent Patients -->
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">{% trans "Recent Patients" %}</h5>
+            <a href="{% url 'staff:recent_patients' %}" class="text-decoration-none">
+                {% trans "View All" %} <i class="fas fa-chevron-right ms-1"></i>
+            </a>
+        </div>
+        
+        {% if recent_patients %}
+            {% for patient in recent_patients %}
+            <a href="{% url 'staff:patient_detail' patient.id %}" class="patient-item text-decoration-none">
+                <div class="patient-avatar">
+                    {{ patient.first_name|first }}{{ patient.last_name|first }}
+                </div>
+                <div class="patient-info">
+                    <div class="patient-name">{{ patient.get_full_name }}</div>
+                    <div class="patient-meta">
+                        <span>MRN: {{ patient.mrn }}</span> • 
+                        <span>{{ patient.get_age }} yrs</span> • 
+                        <span>{{ patient.gender }}</span>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-muted"></i>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="mobile-card text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-0">{% trans "No recent patients" %}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Files -->
+<div class="row mt-4">
+    <div class="col-12">
+        <h5 class="mb-3">{% trans "Recent Uploads" %}</h5>
+        
+        {% if recent_files %}
+            {% for file in recent_files %}
+            <div class="mobile-card">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        {% if file.is_image %}
+                            <i class="fas fa-image fa-2x text-info"></i>
+                        {% elif file.is_pdf %}
+                            <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                        {% else %}
+                            <i class="fas fa-file-medical fa-2x text-primary"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ file.title }}</h6>
+                        <small class="text-muted">
+                            {{ file.patient.get_full_name }} • 
+                            {{ file.created_at|timesince }} {% trans "ago" %}
+                        </small>
+                    </div>
+                   <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-outline-secondary"></a> 
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="mobile-card text-center py-4">
+                <p class="text-muted mb-0">{% trans "No recent files" %}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function quickAddNote() {
+    alert("Quick note feature coming soon!");
+}
+</script>
+{% endblock %}
