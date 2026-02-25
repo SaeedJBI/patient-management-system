@@ -32,8 +32,10 @@ urlpatterns += [
     path('en/', include([
         path('admin/', admin.site.urls),
         path('core/', include(('core.urls', 'core'), namespace='en_core')),
+        path('branches/', include(('branches.urls', 'branches'), namespace='en_branches')),  # ADDED HERE
         path('patients/', include(('patients.urls', 'patients'), namespace='en_patients')),
         path('files/', include(('files.urls', 'files'), namespace='en_files')),
+        path('search/', include(('search.urls', 'search'), namespace='en_search')),
     ])),
 ]
 
@@ -42,8 +44,10 @@ urlpatterns += [
     path('ar/', include([
         path('admin/', admin.site.urls),
         path('core/', include(('core.urls', 'core'), namespace='ar_core')),
+        path('branches/', include(('branches.urls', 'branches'), namespace='ar_branches')),  # ADDED HERE
         path('patients/', include(('patients.urls', 'patients'), namespace='ar_patients')),
         path('files/', include(('files.urls', 'files'), namespace='ar_files')),
+        path('search/', include(('search.urls', 'search'), namespace='ar_search')),
     ])),
 ]
 

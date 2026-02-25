@@ -20,13 +20,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
     
     # Our apps
     'core',
     'branches',
     'patients',
     'files',
-    'staff', 
+    'staff',
+    'search',
 ]
 
 MIDDLEWARE = [
