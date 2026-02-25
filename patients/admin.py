@@ -103,8 +103,65 @@ class PatientAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
     
     def get_queryset(self, request):
-        """Optimize queryset with select_related for branch."""
-        return super().get_queryset(request).select_related('branch')
+        """Filter patients based on user role and optimize queries."""
+        # Start with optimized queryset
+        qs = super().get_queryset(request).select_related('branch')
+        
+        # Superuser sees everything
+        if request.user.is_superuser:
+            return qs
+        
+        # Check if user has staff profile
+        if hasattr(request.user, 'staff_profile'):
+            staff = request.user.staff_profile
+            
+            # Branch admin sees all patients in their branch
+            if staff.role == 'branch_admin':
+                return qs.filter(branch=staff.branch)
+            else:
+                # Regular staff (doctors, pharmacists, etc.) see only assigned patients
+                return staff.assigned_patients.all()
+        
+        # No access
+        return qs.none()
+    
+    def has_view_permission(self, request, obj=None):
+        """Check if user can view this specific patient."""
+        if not obj:
+            return super().has_view_permission(request, obj)
+        
+        # Superuser can view everything
+        if request.user.is_superuser:
+            return True
+        
+        # Check staff permissions
+        if hasattr(request.user, 'staff_profile'):
+            staff = request.user.staff_profile
+            return staff.can_view_patient(obj)
+        
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        """Control who can edit patient records."""
+        if not obj:
+            return super().has_change_permission(request, obj)
+        
+        # Superuser can edit everything
+        if request.user.is_superuser:
+            return True
+        
+        # Check staff permissions
+        if hasattr(request.user, 'staff_profile'):
+            staff = request.user.staff_profile
+            
+            # Only admins can edit demographics
+            if staff.role in ['branch_admin', 'super_admin']:
+                return True
+            
+            # Regular staff cannot edit patients
+            return False
+        
+        return False
 
 
 admin.site.register(Patient, PatientAdmin)

@@ -1,0 +1,13 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+    {% if original and perms.patients.can_upload_files %}
+        <li>
+            <a href="{% url 'admin:files_medicalfile_add' %}?patient={{ original.id }}" class="addlink">
+                {% trans "Upload File" %}
+            </a>
+        </li>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

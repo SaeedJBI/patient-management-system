@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'branches',
     'patients',
     'files',
+    'staff', 
 ]
 
 MIDDLEWARE = [

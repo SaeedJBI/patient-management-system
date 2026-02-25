@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from .models import MedicalFile
 
 
+
 class MedicalFileAdmin(admin.ModelAdmin):
     """
     Admin interface for MedicalFile model.
@@ -17,7 +18,8 @@ class MedicalFileAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description', 'patient__first_name', 'patient__last_name')
     readonly_fields = (
         'file_size_display', 'checksum', 'original_filename', 'content_type',
-        'file_extension', 'download_count', 'last_accessed', 'created_at', 'updated_at'
+        'file_extension', 'download_count', 'last_accessed', 'created_at', 'updated_at',
+        'is_encrypted'  # Add is_encrypted to readonly_fields
     )
     fieldsets = (
         (_('Basic Information'), {

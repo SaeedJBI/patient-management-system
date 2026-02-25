@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import PermissionDenied
 from .models import MedicalFile
+from django.utils.translation import gettext_lazy as _ 
 
 
 @login_required

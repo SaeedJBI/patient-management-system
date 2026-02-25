@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import FileExtensionValidator
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from core.models import User
 from patients.models import Patient
 import hashlib
@@ -32,13 +33,30 @@ class MedicalFile(models.Model):
     """
     
     CATEGORY_CHOICES = [
-        ('lab_report', _('Lab Report')),
-        ('xray', _('X-Ray / Radiology')),
+        # Medical (Doctors)
+        ('medical_report', _('Medical Report')),
         ('prescription', _('Prescription')),
+        ('lab_result', _('Lab Result')),
+        ('imaging', _('Imaging/X-Ray')),
+        
+        # Pharmacy
+        ('receipt', _('Receipt/Invoice')),
+        ('medicine_info', _('Medicine Information')),
+        
+        # Nutrition
+        ('nutrition_plan', _('Nutrition Plan')),
+        ('diet_program', _('Diet Program')),
+        ('food_diary', _('Food Diary')),
+        
+        # Reception
+        ('appointment', _('Appointment')),
+        ('visit_note', _('Visit Note')),
+        
+        # General
+        ('note', _('General Note')),
         ('identification', _('Identification Document')),
         ('insurance', _('Insurance Document')),
         ('consent', _('Consent Form')),
-        ('medical_history', _('Medical History')),
         ('other', _('Other')),
     ]
     
@@ -76,7 +94,7 @@ class MedicalFile(models.Model):
     title = models.CharField(_('title'), max_length=255)
     description = models.TextField(_('description'), blank=True)
     
-    # File metadata - make these nullable temporarily for the fix
+    # File metadata
     original_filename = models.CharField(_('original filename'), max_length=255, blank=True)
     file_size = models.PositiveIntegerField(_('file size (bytes)'), null=True, blank=True)
     content_type = models.CharField(_('content type'), max_length=100, blank=True)
@@ -120,9 +138,68 @@ class MedicalFile(models.Model):
     def __str__(self):
         return f"{self.title} - {self.patient.get_full_name()}"
     
+    def clean(self):
+        """
+        Validate file upload permissions.
+        This is called automatically by Django forms and model validation.
+        """
+        # Skip validation in admin or for superusers (can be set in views)
+        if hasattr(self, '_skip_validation') and self._skip_validation:
+            return
+        
+        # Skip validation if no uploader (shouldn't happen)
+        if not self.uploaded_by:
+            return
+        
+        # Superuser can do anything
+        if self.uploaded_by.is_superuser:
+            return
+        
+        # Check if uploader has staff profile
+        if not hasattr(self.uploaded_by, 'staff_profile'):
+            raise ValidationError(_(
+                'User does not have a staff profile. '
+                'Only staff members can upload files.'
+            ))
+        
+        staff = self.uploaded_by.staff_profile
+        
+        # Check if staff is active
+        if not staff.is_active:
+            raise ValidationError(_(
+                'Your staff account is inactive. '
+                'Please contact your administrator.'
+            ))
+        
+        # Check branch match
+        if self.patient.branch != staff.branch:
+            raise ValidationError(_(
+                'Cannot upload files for patients in other branches. '
+                f'Your branch: {staff.branch.code}, Patient branch: {self.patient.branch.code}'
+            ))
+        
+        # Check patient assignment
+        if not staff.can_view_patient(self.patient):
+            raise ValidationError(_(
+                'This patient is not assigned to you. '
+                'You can only upload files for patients assigned to your care.'
+            ))
+        
+        # Check category permission
+        if not staff.can_upload_category(self.category):
+            allowed = self.get_allowed_categories_for_staff(staff)
+            raise ValidationError(_(
+                f'Your role ({staff.get_role_display()}) cannot upload files '
+                f'of type: {self.get_category_display()}. '
+                f'Allowed types: {", ".join(allowed)}'
+            ))
+    
     def save(self, *args, **kwargs):
-        """Populate metadata fields when saving."""
-        # First, save without metadata to ensure file is stored
+        """Populate metadata fields and validate permissions when saving."""
+        # Run validation
+        self.clean()
+        
+        # Handle new file uploads
         if self.file and not self.pk:  # New file upload
             # Store original filename
             self.original_filename = self.file.name
@@ -130,10 +207,10 @@ class MedicalFile(models.Model):
             # Get file extension
             self.file_extension = os.path.splitext(self.file.name)[1].lower().lstrip('.')
             
-            # We need to save first so the file is actually stored
+            # Save first to ensure file is stored
             super().save(*args, **kwargs)
             
-            # Now that file is saved, we can access its properties
+            # Now that file is saved, get its properties
             if self.file and hasattr(self.file, 'size'):
                 self.file_size = self.file.size
             
@@ -168,13 +245,29 @@ class MedicalFile(models.Model):
         self.last_accessed = timezone.now()
         self.save(update_fields=['download_count', 'last_accessed'])
     
+    def get_allowed_categories_for_staff(self, staff=None):
+        """
+        Get list of categories this staff member can upload.
+        """
+        if staff is None and self.uploaded_by:
+            if hasattr(self.uploaded_by, 'staff_profile'):
+                staff = self.uploaded_by.staff_profile
+        
+        if staff:
+            from staff.models import ROLE_CATEGORY_PERMISSIONS
+            perms = ROLE_CATEGORY_PERMISSIONS.get(staff.role, [])
+            if 'all' in perms:
+                return [cat[0] for cat in self.CATEGORY_CHOICES]
+            return perms
+        return []
+    
     @property
     def file_size_display(self):
         """Return human-readable file size."""
         if not self.file_size:
-            return "Unknown"
+            return _("Unknown")
         size = self.file_size
-        for unit in ['B', 'KB', 'MB', 'GB']:
+        for unit in [_('B'), _('KB'), _('MB'), _('GB')]:
             if size < 1024.0:
                 return f"{size:.1f} {unit}"
             size /= 1024.0
@@ -184,3 +277,18 @@ class MedicalFile(models.Model):
     def branch(self):
         """Get branch through patient (for permissions)."""
         return self.patient.branch
+    
+    @property
+    def is_image(self):
+        """Check if file is an image."""
+        return self.file_extension.lower() in ['jpg', 'jpeg', 'png', 'gif', 'tiff']
+    
+    @property
+    def is_pdf(self):
+        """Check if file is a PDF."""
+        return self.file_extension.lower() == 'pdf'
+    
+    @property
+    def is_document(self):
+        """Check if file is a document (Word, Excel, etc.)."""
+        return self.file_extension.lower() in ['doc', 'docx', 'xls', 'xlsx', 'txt', 'csv']
