@@ -3,12 +3,13 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.utils.translation import check_for_language, activate
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.urls import translate_url
+from django.urls import translate_url  # This is important!
 
 
 def set_language(request):
     """
-    Custom language switching view that preserves the current page.
+    Custom language switching view that preserves the current page
+    AND translates the URL to the new language.
     """
     if request.method == 'POST':
         lang_code = request.POST.get('language')
@@ -17,6 +18,9 @@ def set_language(request):
         if lang_code and check_for_language(lang_code):
             # Ensure the next URL is safe
             if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                # TRANSLATE THE URL to the new language (e.g., /en/staff/ -> /ar/staff/)
+                next_url = translate_url(next_url, lang_code)
+                
                 # Activate the language
                 activate(lang_code)
                 
@@ -30,7 +34,7 @@ def set_language(request):
                         request.user.language = lang_code
                         request.user.save(update_fields=['language'])
                 
-                # Create response with cookie
+                # Create response with cookie and redirect to translated URL
                 response = HttpResponseRedirect(next_url)
                 response.set_cookie(
                     settings.LANGUAGE_COOKIE_NAME,
@@ -40,18 +44,17 @@ def set_language(request):
                     samesite='Lax',
                 )
                 
-                # Also set a flag to ensure middleware picks it up
-                response.set_cookie('language_just_changed', '1', max_age=5)
-                
                 return response
     
     # Fallback
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
 
 def login_redirect(request):
     """Redirect users based on their role after login."""
     if request.user.is_authenticated:
         if request.user.is_superuser:
             return redirect('admin:index')
-        return redirect('staff_dashboard')
+        # Use namespaced URL for staff dashboard
+        return redirect('staff:dashboard')
     return redirect('admin:login')

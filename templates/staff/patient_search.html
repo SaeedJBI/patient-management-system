@@ -1,0 +1,232 @@
+{% extends "base_staff.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Search Patients" %}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="h4 mb-3">
+            <i class="fas fa-search text-primary me-2"></i>
+            {% trans "Search Patients" %}
+        </h2>
+    </div>
+</div>
+
+<!-- Search Box -->
+<div class="row mb-4">
+    <div class="col-12">
+        <input type="text" 
+               id="search-input" 
+               class="mobile-search" 
+               placeholder="{% trans 'Search by name, MRN, national ID, or phone...' %}"
+               autofocus>
+    </div>
+</div>
+
+<!-- Filters (collapsible on mobile) -->
+<div class="row mb-4">
+    <div class="col-12">
+        <button class="btn btn-outline-secondary w-100 mb-2 d-sm-none" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+            <i class="fas fa-filter me-2"></i>{% trans "Show Filters" %}
+        </button>
+        
+        <div id="filterPanel" class="collapse show">
+            <div class="mobile-card">
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <label class="form-label">{% trans "Branch" %}</label>
+                        <select id="branch-filter" class="form-select">
+                            <option value="">{% trans "All Branches" %}</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label">{% trans "Gender" %}</label>
+                        <select id="gender-filter" class="form-select">
+                            <option value="">{% trans "All" %}</option>
+                            <option value="M">{% trans "Male" %}</option>
+                            <option value="F">{% trans "Female" %}</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label">{% trans "Min Age" %}</label>
+                        <input type="number" id="age-min" class="form-control" min="0" max="150">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label">{% trans "Max Age" %}</label>
+                        <input type="number" id="age-max" class="form-control" min="0" max="150">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Count -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div id="search-stats" class="text-muted"></div>
+    </div>
+</div>
+
+<!-- Results -->
+<div class="row">
+    <div class="col-12">
+        <div id="results-container">
+            <div class="mobile-card text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <p class="text-muted">{% trans "Type at least 2 characters to search" %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+<div class="row">
+    <div class="col-12">
+        <div id="pagination" class="pagination"></div>
+    </div>
+</div>
+
+<script>
+let currentPage = 1;
+let searchTimeout;
+
+function getFilters() {
+    return {
+        branch: document.getElementById('branch-filter').value,
+        gender: document.getElementById('gender-filter').value,
+        age_min: document.getElementById('age-min').value,
+        age_max: document.getElementById('age-max').value,
+    };
+}
+
+function performSearch(page = 1) {
+    const query = document.getElementById('search-input').value;
+    const filters = getFilters();
+    
+    if (query.length < 2) {
+        document.getElementById('results-container').innerHTML = 
+            '<div class="mobile-card text-center py-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">{% trans "Type at least 2 characters to search" %}</p></div>';
+        document.getElementById('search-stats').innerHTML = '';
+        return;
+    }
+    
+    currentPage = page;
+    
+    // Build URL with filters
+    let url = `{% url 'search:api' %}?q=${encodeURIComponent(query)}&page=${page}`;
+    if (filters.branch) url += `&branch=${filters.branch}`;
+    if (filters.gender) url += `&gender=${filters.gender}`;
+    if (filters.age_min) url += `&age_min=${filters.age_min}`;
+    if (filters.age_max) url += `&age_max=${filters.age_max}`;
+    
+    document.getElementById('results-container').innerHTML = 
+        '<div class="text-center py-5"><div class="loading-spinner"></div><p class="mt-3">{% trans "Searching..." %}</p></div>';
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            displayResults(data);
+            updatePagination(data);
+        })
+        .catch(error => {
+            document.getElementById('results-container').innerHTML = 
+                '<div class="mobile-card text-center py-5 text-danger">{% trans "An error occurred. Please try again." %}</div>';
+        });
+}
+
+function displayResults(data) {
+    const container = document.getElementById('results-container');
+    const stats = document.getElementById('search-stats');
+    
+    if (data.total === 0) {
+        container.innerHTML = '<div class="mobile-card text-center py-5"><i class="fas fa-user-slash fa-3x text-muted mb-3"></i><p class="text-muted">{% trans "No patients found." %}</p></div>';
+        stats.innerHTML = '';
+        return;
+    }
+    
+    stats.innerHTML = `<span class="badge bg-info">${data.total} {% trans "patients found" %}</span>`;
+    
+    let html = '';
+    data.results.forEach(patient => {
+        html += `
+        <a href="/{{ LANGUAGE_CODE }}/staff/patient/${patient.id}/" class="patient-item text-decoration-none">
+            <div class="patient-avatar">
+                ${patient.name.charAt(0)}
+            </div>
+            <div class="patient-info">
+                <div class="patient-name">${patient.name}</div>
+                <div class="patient-meta">
+                    <span>MRN: ${patient.mrn}</span> • 
+                    <span>${patient.age} yrs</span> • 
+                    <span>${patient.gender}</span> • 
+                    <span>${patient.phone}</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-right text-muted"></i>
+        </a>`;
+    });
+    
+    container.innerHTML = html;
+}
+
+function updatePagination(data) {
+    const pagination = document.getElementById('pagination');
+    const totalPages = Math.ceil(data.total / data.page_size);
+    
+    if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+    }
+    
+    let html = '<div class="d-flex justify-content-center gap-2">';
+    
+    if (data.page > 1) {
+        html += `<button class="btn btn-sm btn-outline-primary" onclick="performSearch(${data.page - 1})">&laquo;</button>`;
+    }
+    
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === data.page) {
+            html += `<button class="btn btn-sm btn-primary">${i}</button>`;
+        } else if (i === 1 || i === totalPages || (i >= data.page - 2 && i <= data.page + 2)) {
+            html += `<button class="btn btn-sm btn-outline-primary" onclick="performSearch(${i})">${i}</button>`;
+        } else if (i === data.page - 3 || i === data.page + 3) {
+            html += `<span class="btn btn-sm btn-outline-secondary disabled">...</span>`;
+        }
+    }
+    
+    if (data.page < totalPages) {
+        html += `<button class="btn btn-sm btn-outline-primary" onclick="performSearch(${data.page + 1})">&raquo;</button>`;
+    }
+    
+    html += '</div>';
+    pagination.innerHTML = html;
+}
+
+// Search as user types
+document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => performSearch(1), 500);
+});
+
+// Apply filters when changed
+document.getElementById('branch-filter').addEventListener('change', () => performSearch(1));
+document.getElementById('gender-filter').addEventListener('change', () => performSearch(1));
+document.getElementById('age-min').addEventListener('change', () => performSearch(1));
+document.getElementById('age-max').addEventListener('change', () => performSearch(1));
+
+// Load branches
+fetch('/{{ LANGUAGE_CODE }}/branches/api/')
+    .then(response => response.json())
+    .then(branches => {
+        const select = document.getElementById('branch-filter');
+        branches.forEach(branch => {
+            const option = document.createElement('option');
+            option.value = branch.id;
+            option.textContent = `${branch.name} (${branch.code})`;
+            select.appendChild(option);
+        });
+    });
+</script>
+{% endblock %}

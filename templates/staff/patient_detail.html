@@ -49,30 +49,72 @@
 
 <!-- Patient Information Tabs -->
 <ul class="nav nav-tabs mb-3" id="patientTabs" role="tablist">
+    <!-- All Files Tab (default) - SIMPLE LIST -->
     <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="files-tab" data-bs-toggle="tab" data-bs-target="#files" type="button">
-            {% trans "Files" %} ({{ total_files }})
+        <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button">
+            <i class="fas fa-folder-open me-1"></i>{% trans "All Files" %} ({{ total_files }})
         </button>
     </li>
+    
+    <!-- Doctor Files Tab -->
+    {% if files_by_role.doctor %}
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="doctor-tab" data-bs-toggle="tab" data-bs-target="#doctor" type="button">
+            <i class="fas fa-user-md text-primary me-1"></i>{% trans "Doctor" %} ({{ files_by_role.doctor|length }})
+        </button>
+    </li>
+    {% endif %}
+    
+    <!-- Receptionist Files Tab -->
+    {% if files_by_role.receptionist %}
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="receptionist-tab" data-bs-toggle="tab" data-bs-target="#receptionist" type="button">
+            <i class="fas fa-calendar-alt text-info me-1"></i>{% trans "Reception" %} ({{ files_by_role.receptionist|length }})
+        </button>
+    </li>
+    {% endif %}
+    
+    <!-- Pharmacist Files Tab -->
+    {% if files_by_role.pharmacist %}
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pharmacist-tab" data-bs-toggle="tab" data-bs-target="#pharmacist" type="button">
+            <i class="fas fa-pills text-success me-1"></i>{% trans "Pharmacy" %} ({{ files_by_role.pharmacist|length }})
+        </button>
+    </li>
+    {% endif %}
+    
+    <!-- Nutritionist Files Tab -->
+    {% if files_by_role.nutritionist %}
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="nutritionist-tab" data-bs-toggle="tab" data-bs-target="#nutritionist" type="button">
+            <i class="fas fa-apple-alt text-warning me-1"></i>{% trans "Nutrition" %} ({{ files_by_role.nutritionist|length }})
+        </button>
+    </li>
+    {% endif %}
+    
+    <!-- Finance Files Tab -->
+    {% if files_by_role.finance %}
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="finance-tab" data-bs-toggle="tab" data-bs-target="#finance" type="button">
+            <i class="fas fa-coins text-success me-1"></i>{% trans "Finance" %} ({{ files_by_role.finance|length }})
+        </button>
+    </li>
+    {% endif %}
+    
+    <!-- Information Tab -->
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button">
-            {% trans "Information" %}
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button">
-            {% trans "History" %}
+            <i class="fas fa-info-circle me-1"></i>{% trans "Information" %}
         </button>
     </li>
 </ul>
 
 <div class="tab-content" id="patientTabsContent">
-    <!-- Files Tab -->
-    <div class="tab-pane fade show active" id="files" role="tabpanel">
-        {% if files_by_category %}
-            {% for category, files in files_by_category.items %}
-                <h6 class="mt-3 mb-2">{{ category }}</h6>
-                {% for file in files %}
+    <!-- ALL FILES TAB - Simple list, no categories -->
+    <div class="tab-pane fade show active" id="all" role="tabpanel">
+        {% if files_by_role.all %}
+            {% for file in files_by_role.all %}
+                <!-- File Card -->
                 <div class="mobile-card mb-2">
                     <div class="d-flex align-items-center">
                         <div class="me-3">
@@ -80,111 +122,565 @@
                                 <i class="fas fa-image fa-2x text-info"></i>
                             {% elif file.is_pdf %}
                                 <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                            {% elif file.file_extension == 'doc' or file.file_extension == 'docx' %}
+                                <i class="fas fa-file-word fa-2x text-primary"></i>
+                            {% elif file.file_extension == 'xls' or file.file_extension == 'xlsx' %}
+                                <i class="fas fa-file-excel fa-2x text-success"></i>
+                            {% elif file.file_extension == 'txt' or file.file_extension == 'csv' or file.file_extension == 'log' %}
+                                <i class="fas fa-file-alt fa-2x text-secondary"></i>
                             {% else %}
-                                <i class="fas fa-file-medical fa-2x text-primary"></i>
+                                <i class="fas fa-file-medical fa-2x text-secondary"></i>
                             {% endif %}
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="mb-1">{{ file.title }}</h6>
                             <small class="text-muted">
                                 {{ file.uploaded_by.get_full_name }} • 
-                                {{ file.created_at|date:"Y-m-d" }}
+                                {{ file.created_at|date:"Y-m-d H:i" }} • 
+                                {{ file.file_size_display }}
                             </small>
+                            {% if file.description %}
+                                <p class="small text-muted mt-1 mb-0">{{ file.description|truncatechars:100 }}</p>
+                            {% endif %}
                         </div>
-                        <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-download"></i>
-                        </a>
+                        <div class="btn-group" role="group">
+                            {% if file.can_preview %}
+                            <a href="{% url 'files:file_preview' file.id %}" target="_blank" class="btn btn-sm btn-outline-primary" title="{% trans 'Preview' %}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-outline-secondary" title="{% trans 'Download' %}">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
-                {% endfor %}
             {% endfor %}
         {% else %}
             <div class="mobile-card text-center py-5">
                 <i class="fas fa-file-medical fa-3x text-muted mb-3"></i>
                 <p class="text-muted mb-0">{% trans "No files uploaded yet" %}</p>
+                <button class="btn btn-primary touch-btn mt-3" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="fas fa-upload me-2"></i>{% trans "Upload First File" %}
+                </button>
             </div>
         {% endif %}
     </div>
     
-    <!-- Information Tab -->
-    <div class="tab-pane fade" id="info" role="tabpanel">
-        <div class="mobile-card">
-            <h6 class="mb-3">{% trans "Personal Information" %}</h6>
-            
-            <div class="row g-3">
-                <div class="col-6">
-                    <small class="text-muted d-block">{% trans "Full Name" %}</small>
-                    <strong>{{ patient.get_full_name }}</strong>
+    <!-- DOCTOR FILES TAB - Grouped by Category -->
+    {% if files_by_role_and_category.doctor %}
+    <div class="tab-pane fade" id="doctor" role="tabpanel">
+        {% for category, category_files in files_by_role_and_category.doctor.items %}
+            <h6 class="mt-3 mb-2">{{ category }} ({{ category_files|length }})</h6>
+            {% for file in category_files %}
+                <!-- File Card -->
+                <div class="mobile-card mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            {% if file.is_image %}
+                                <i class="fas fa-image fa-2x text-info"></i>
+                            {% elif file.is_pdf %}
+                                <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                            {% elif file.file_extension == 'doc' or file.file_extension == 'docx' %}
+                                <i class="fas fa-file-word fa-2x text-primary"></i>
+                            {% elif file.file_extension == 'xls' or file.file_extension == 'xlsx' %}
+                                <i class="fas fa-file-excel fa-2x text-success"></i>
+                            {% elif file.file_extension == 'txt' or file.file_extension == 'csv' or file.file_extension == 'log' %}
+                                <i class="fas fa-file-alt fa-2x text-secondary"></i>
+                            {% else %}
+                                <i class="fas fa-file-medical fa-2x text-secondary"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ file.title }}</h6>
+                            <small class="text-muted">
+                                {{ file.uploaded_by.get_full_name }} • 
+                                {{ file.created_at|date:"Y-m-d H:i" }} • 
+                                {{ file.file_size_display }}
+                            </small>
+                            {% if file.description %}
+                                <p class="small text-muted mt-1 mb-0">{{ file.description|truncatechars:100 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="btn-group" role="group">
+                            {% if file.can_preview %}
+                            <a href="{% url 'files:file_preview' file.id %}" target="_blank" class="btn btn-sm btn-outline-primary" title="{% trans 'Preview' %}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-outline-secondary" title="{% trans 'Download' %}">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6">
-                    <small class="text-muted d-block">{% trans "Mother's Name" %}</small>
-                    <strong>{{ patient.mother_name|default:"-" }}</strong>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- RECEPTIONIST FILES TAB - Grouped by Category -->
+    {% if files_by_role_and_category.receptionist %}
+    <div class="tab-pane fade" id="receptionist" role="tabpanel">
+        {% for category, category_files in files_by_role_and_category.receptionist.items %}
+            <h6 class="mt-3 mb-2">{{ category }} ({{ category_files|length }})</h6>
+            {% for file in category_files %}
+                <!-- File Card (same as above) -->
+                <div class="mobile-card mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            {% if file.is_image %}
+                                <i class="fas fa-image fa-2x text-info"></i>
+                            {% elif file.is_pdf %}
+                                <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                            {% elif file.file_extension == 'doc' or file.file_extension == 'docx' %}
+                                <i class="fas fa-file-word fa-2x text-primary"></i>
+                            {% elif file.file_extension == 'xls' or file.file_extension == 'xlsx' %}
+                                <i class="fas fa-file-excel fa-2x text-success"></i>
+                            {% elif file.file_extension == 'txt' or file.file_extension == 'csv' or file.file_extension == 'log' %}
+                                <i class="fas fa-file-alt fa-2x text-secondary"></i>
+                            {% else %}
+                                <i class="fas fa-file-medical fa-2x text-secondary"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ file.title }}</h6>
+                            <small class="text-muted">
+                                {{ file.uploaded_by.get_full_name }} • 
+                                {{ file.created_at|date:"Y-m-d H:i" }} • 
+                                {{ file.file_size_display }}
+                            </small>
+                            {% if file.description %}
+                                <p class="small text-muted mt-1 mb-0">{{ file.description|truncatechars:100 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="btn-group" role="group">
+                            {% if file.can_preview %}
+                            <a href="{% url 'files:file_preview' file.id %}" target="_blank" class="btn btn-sm btn-outline-primary" title="{% trans 'Preview' %}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-outline-secondary" title="{% trans 'Download' %}">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6">
-                    <small class="text-muted d-block">{% trans "Date of Birth" %}</small>
-                    <strong>{{ patient.date_of_birth|date:"Y-m-d" }}</strong>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- PHARMACIST FILES TAB - Grouped by Category -->
+    {% if files_by_role_and_category.pharmacist %}
+    <div class="tab-pane fade" id="pharmacist" role="tabpanel">
+        {% for category, category_files in files_by_role_and_category.pharmacist.items %}
+            <h6 class="mt-3 mb-2">{{ category }} ({{ category_files|length }})</h6>
+            {% for file in category_files %}
+                <!-- File Card (same as above) -->
+                <div class="mobile-card mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            {% if file.is_image %}
+                                <i class="fas fa-image fa-2x text-info"></i>
+                            {% elif file.is_pdf %}
+                                <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                            {% elif file.file_extension == 'doc' or file.file_extension == 'docx' %}
+                                <i class="fas fa-file-word fa-2x text-primary"></i>
+                            {% elif file.file_extension == 'xls' or file.file_extension == 'xlsx' %}
+                                <i class="fas fa-file-excel fa-2x text-success"></i>
+                            {% elif file.file_extension == 'txt' or file.file_extension == 'csv' or file.file_extension == 'log' %}
+                                <i class="fas fa-file-alt fa-2x text-secondary"></i>
+                            {% else %}
+                                <i class="fas fa-file-medical fa-2x text-secondary"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ file.title }}</h6>
+                            <small class="text-muted">
+                                {{ file.uploaded_by.get_full_name }} • 
+                                {{ file.created_at|date:"Y-m-d H:i" }} • 
+                                {{ file.file_size_display }}
+                            </small>
+                            {% if file.description %}
+                                <p class="small text-muted mt-1 mb-0">{{ file.description|truncatechars:100 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="btn-group" role="group">
+                            {% if file.can_preview %}
+                            <a href="{% url 'files:file_preview' file.id %}" target="_blank" class="btn btn-sm btn-outline-primary" title="{% trans 'Preview' %}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-outline-secondary" title="{% trans 'Download' %}">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6">
-                    <small class="text-muted d-block">{% trans "Place of Birth" %}</small>
-                    <strong>{{ patient.place_of_birth|default:"-" }}</strong>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- NUTRITIONIST FILES TAB - Grouped by Category -->
+    {% if files_by_role_and_category.nutritionist %}
+    <div class="tab-pane fade" id="nutritionist" role="tabpanel">
+        {% for category, category_files in files_by_role_and_category.nutritionist.items %}
+            <h6 class="mt-3 mb-2">{{ category }} ({{ category_files|length }})</h6>
+            {% for file in category_files %}
+                <!-- File Card (same as above) -->
+                <div class="mobile-card mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            {% if file.is_image %}
+                                <i class="fas fa-image fa-2x text-info"></i>
+                            {% elif file.is_pdf %}
+                                <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                            {% elif file.file_extension == 'doc' or file.file_extension == 'docx' %}
+                                <i class="fas fa-file-word fa-2x text-primary"></i>
+                            {% elif file.file_extension == 'xls' or file.file_extension == 'xlsx' %}
+                                <i class="fas fa-file-excel fa-2x text-success"></i>
+                            {% elif file.file_extension == 'txt' or file.file_extension == 'csv' or file.file_extension == 'log' %}
+                                <i class="fas fa-file-alt fa-2x text-secondary"></i>
+                            {% else %}
+                                <i class="fas fa-file-medical fa-2x text-secondary"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ file.title }}</h6>
+                            <small class="text-muted">
+                                {{ file.uploaded_by.get_full_name }} • 
+                                {{ file.created_at|date:"Y-m-d H:i" }} • 
+                                {{ file.file_size_display }}
+                            </small>
+                            {% if file.description %}
+                                <p class="small text-muted mt-1 mb-0">{{ file.description|truncatechars:100 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="btn-group" role="group">
+                            {% if file.can_preview %}
+                            <a href="{% url 'files:file_preview' file.id %}" target="_blank" class="btn btn-sm btn-outline-primary" title="{% trans 'Preview' %}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-outline-secondary" title="{% trans 'Download' %}">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6">
-                    <small class="text-muted d-block">{% trans "Nationality" %}</small>
-                    <strong>{{ patient.nationality }}</strong>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- FINANCE FILES TAB - Grouped by Category -->
+    {% if files_by_role_and_category.finance %}
+    <div class="tab-pane fade" id="finance" role="tabpanel">
+        {% for category, category_files in files_by_role_and_category.finance.items %}
+            <h6 class="mt-3 mb-2">{{ category }} ({{ category_files|length }})</h6>
+            {% for file in category_files %}
+                <!-- File Card (same as above) -->
+                <div class="mobile-card mb-2">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            {% if file.is_image %}
+                                <i class="fas fa-image fa-2x text-info"></i>
+                            {% elif file.is_pdf %}
+                                <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                            {% elif file.file_extension == 'doc' or file.file_extension == 'docx' %}
+                                <i class="fas fa-file-word fa-2x text-primary"></i>
+                            {% elif file.file_extension == 'xls' or file.file_extension == 'xlsx' %}
+                                <i class="fas fa-file-excel fa-2x text-success"></i>
+                            {% elif file.file_extension == 'txt' or file.file_extension == 'csv' or file.file_extension == 'log' %}
+                                <i class="fas fa-file-alt fa-2x text-secondary"></i>
+                            {% else %}
+                                <i class="fas fa-file-medical fa-2x text-secondary"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ file.title }}</h6>
+                            <small class="text-muted">
+                                {{ file.uploaded_by.get_full_name }} • 
+                                {{ file.created_at|date:"Y-m-d H:i" }} • 
+                                {{ file.file_size_display }}
+                            </small>
+                            {% if file.description %}
+                                <p class="small text-muted mt-1 mb-0">{{ file.description|truncatechars:100 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="btn-group" role="group">
+                            {% if file.can_preview %}
+                            <a href="{% url 'files:file_preview' file.id %}" target="_blank" class="btn btn-sm btn-outline-primary" title="{% trans 'Preview' %}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-outline-secondary" title="{% trans 'Download' %}">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6">
-                    <small class="text-muted d-block">{% trans "Marital Status" %}</small>
-                    <strong>{{ patient.get_marital_status_display|default:"-" }}</strong>
-                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+<!-- INFORMATION TAB - Complete Patient Information -->
+<div class="tab-pane fade" id="info" role="tabpanel">
+    <!-- Personal Information -->
+    <div class="mobile-card mb-3">
+        <h6 class="mb-3">
+            <i class="fas fa-user-circle text-primary me-2"></i>
+            {% trans "Personal Information" %}
+        </h6>
+        
+        <div class="row g-3">
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Full Name" %}</small>
+                <strong>{{ patient.get_full_name }}</strong>
             </div>
-            
-            <hr class="my-3">
-            
-            <h6 class="mb-3">{% trans "Contact Information" %}</h6>
-            
-            <div class="row g-3">
-                <div class="col-12">
-                    <small class="text-muted d-block">{% trans "Address" %}</small>
-                    <strong>
-                        {{ patient.address_line1 }}{% if patient.address_line2 %}, {{ patient.address_line2 }}{% endif %}
-                        <br>{{ patient.city }}, {{ patient.state }} {{ patient.postal_code }}
-                        <br>{{ patient.country }}
-                    </strong>
-                </div>
-                <div class="col-6">
-                    <small class="text-muted d-block">{% trans "Mobile" %}</small>
-                    <strong>{{ patient.phone_mobile }}</strong>
-                </div>
-                <div class="col-6">
-                    <small class="text-muted d-block">{% trans "Home" %}</small>
-                    <strong>{{ patient.phone_home|default:"-" }}</strong>
-                </div>
-                <div class="col-6">
-                    <small class="text-muted d-block">{% trans "Email" %}</small>
-                    <strong>{{ patient.email|default:"-" }}</strong>
-                </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Mother's Name" %}</small>
+                <strong>{{ patient.mother_name|default:"-" }}</strong>
             </div>
-            
-            {% if can_edit_demographics %}
-            <div class="mt-3">
-                <a href="{% url 'admin:patients_patient_change' patient.id %}" class="btn btn-outline-primary touch-btn">
-                    <i class="fas fa-edit me-2"></i>{% trans "Edit in Admin" %}
-                </a>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Date of Birth" %}</small>
+                <strong>{{ patient.date_of_birth|date:"Y-m-d" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Age" %}</small>
+                <strong>{{ patient.get_age }} {% trans "years" %}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Place of Birth" %}</small>
+                <strong>{{ patient.place_of_birth|default:"-" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Gender" %}</small>
+                <strong>{{ patient.get_gender_display }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Nationality" %}</small>
+                <strong>{{ patient.nationality }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Marital Status" %}</small>
+                <strong>{{ patient.get_marital_status_display|default:"-" }}</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Information -->
+    <div class="mobile-card mb-3">
+        <h6 class="mb-3">
+            <i class="fas fa-address-card text-info me-2"></i>
+            {% trans "Contact Information" %}
+        </h6>
+        
+        <div class="row g-3">
+            <div class="col-12">
+                <small class="text-muted d-block">{% trans "Address" %}</small>
+                <strong>
+                    {{ patient.address_line1 }}{% if patient.address_line2 %}, {{ patient.address_line2 }}{% endif %}<br>
+                    {{ patient.city }}, {{ patient.state }} {{ patient.postal_code }}<br>
+                    {{ patient.country }}
+                </strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Mobile Phone" %}</small>
+                <strong>{{ patient.phone_mobile }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Home Phone" %}</small>
+                <strong>{{ patient.phone_home|default:"-" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Work Phone" %}</small>
+                <strong>{{ patient.phone_work|default:"-" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Email" %}</small>
+                <strong>{{ patient.email|default:"-" }}</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Emergency Contact -->
+    <div class="mobile-card mb-3">
+        <h6 class="mb-3">
+            <i class="fas fa-ambulance text-danger me-2"></i>
+            {% trans "Emergency Contact" %}
+        </h6>
+        
+        <div class="row g-3">
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Name" %}</small>
+                <strong>{{ patient.emergency_contact_name|default:"-" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Relationship" %}</small>
+                <strong>{{ patient.emergency_contact_relationship|default:"-" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Phone" %}</small>
+                <strong>{{ patient.emergency_contact_phone|default:"-" }}</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Identification & Medical Records -->
+    <div class="mobile-card mb-3">
+        <h6 class="mb-3">
+            <i class="fas fa-id-card text-secondary me-2"></i>
+            {% trans "Identification & Medical Records" %}
+        </h6>
+        
+        <div class="row g-3">
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "MRN" %}</small>
+                <strong>{{ patient.mrn }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "National ID" %}</small>
+                <strong>{{ patient.national_id }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Blood Type" %}</small>
+                <strong>{{ patient.get_blood_type_display }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Branch" %}</small>
+                <strong>{{ patient.branch.name }} ({{ patient.branch.code }})</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Insurance Information -->
+    <div class="mobile-card mb-3">
+        <h6 class="mb-3">
+            <i class="fas fa-shield-alt text-success me-2"></i>
+            {% trans "Insurance Information" %}
+        </h6>
+        
+        <div class="row g-3">
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Provider" %}</small>
+                <strong>{{ patient.insurance_provider|default:"-" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Policy Number" %}</small>
+                <strong>{{ patient.insurance_policy_number|default:"-" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Expiry Date" %}</small>
+                <strong>{{ patient.insurance_expiry_date|date:"Y-m-d"|default:"-" }}</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Medical Flags / Alerts -->
+    <div class="mobile-card mb-3">
+        <h6 class="mb-3">
+            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+            {% trans "Medical Alerts" %}
+        </h6>
+        
+        <div class="row g-3">
+            <div class="col-6">
+                <div class="d-flex align-items-center">
+                    <span class="badge {% if patient.has_allergies %}bg-danger{% else %}bg-secondary{% endif %} me-2">
+                        {% if patient.has_allergies %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}
+                    </span>
+                    <small class="text-muted">{% trans "Allergies" %}</small>
+                </div>
+                {% if patient.allergy_notes %}
+                    <p class="small mt-1 mb-0">{{ patient.allergy_notes }}</p>
+                {% endif %}
+            </div>
+            <div class="col-6">
+                <div class="d-flex align-items-center">
+                    <span class="badge {% if patient.has_chronic_conditions %}bg-warning{% else %}bg-secondary{% endif %} me-2">
+                        {% if patient.has_chronic_conditions %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}
+                    </span>
+                    <small class="text-muted">{% trans "Chronic Conditions" %}</small>
+                </div>
+                {% if patient.chronic_conditions_notes %}
+                    <p class="small mt-1 mb-0">{{ patient.chronic_conditions_notes }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Status Information -->
+    <div class="mobile-card mb-3">
+        <h6 class="mb-3">
+            <i class="fas fa-info-circle text-info me-2"></i>
+            {% trans "Status Information" %}
+        </h6>
+        
+        <div class="row g-3">
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Status" %}</small>
+                <span class="badge {% if patient.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                    {% if patient.is_active %}{% trans "Active" %}{% else %}{% trans "Inactive" %}{% endif %}
+                </span>
+            </div>
+            {% if patient.is_deceased %}
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Date of Death" %}</small>
+                <strong>{{ patient.date_of_death|date:"Y-m-d" }}</strong>
             </div>
             {% endif %}
         </div>
     </div>
     
-    <!-- History Tab -->
-    <div class="tab-pane fade" id="history" role="tabpanel">
-        <div class="mobile-card">
-            <h6 class="mb-3">{% trans "Recent Activity" %}</h6>
-            
-            <div class="timeline">
-                <p class="text-muted text-center py-4">{% trans "Activity log coming soon" %}</p>
+    <!-- General Notes -->
+    {% if patient.notes %}
+    <div class="mobile-card mb-3">
+        <h6 class="mb-3">
+            <i class="fas fa-sticky-note text-secondary me-2"></i>
+            {% trans "General Notes" %}
+        </h6>
+        <p class="mb-0">{{ patient.notes|linebreaks }}</p>
+    </div>
+    {% endif %}
+    
+    <!-- System Information (only for admins) -->
+    {% if can_edit_demographics %}
+    <div class="mobile-card mb-3">
+        <h6 class="mb-3">
+            <i class="fas fa-history text-muted me-2"></i>
+            {% trans "System Information" %}
+        </h6>
+        
+        <div class="row g-3">
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Created At" %}</small>
+                <strong>{{ patient.created_at|date:"Y-m-d H:i" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Created By" %}</small>
+                <strong>{{ patient.created_by.get_full_name|default:"System" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Last Updated" %}</small>
+                <strong>{{ patient.updated_at|date:"Y-m-d H:i" }}</strong>
+            </div>
+            <div class="col-6">
+                <small class="text-muted d-block">{% trans "Updated By" %}</small>
+                <strong>{{ patient.updated_by.get_full_name|default:"-" }}</strong>
             </div>
         </div>
+        
+        <div class="mt-3">
+            <a href="{% url 'admin:patients_patient_change' patient.id %}" class="btn btn-outline-primary touch-btn">
+                <i class="fas fa-edit me-2"></i>{% trans "Edit in Admin" %}
+            </a>
+        </div>
     </div>
+    {% endif %}
 </div>
 
 <!-- Upload Modal -->
@@ -224,7 +720,7 @@
                         <label class="form-label">{% trans "File" %}</label>
                         <input type="file" name="file" class="form-control" required>
                         <small class="text-muted">
-                            {% trans "Allowed: PDF, Word, Excel, Images (max 10MB)" %}
+                            {% trans "Allowed: PDF, Word, Excel, Images, Text files (max 10MB)" %}
                         </small>
                     </div>
                 </div>

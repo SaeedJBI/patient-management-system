@@ -11,4 +11,5 @@ urlpatterns = [
     path('uploads/', views.file_uploads, name='file_uploads'),
     path('profile/', views.staff_profile, name='profile'),
     path('patient/<uuid:patient_id>/', views.patient_detail, name='patient_detail'),
+    path('add-patient/', views.receptionist_add_patient, name='receptionist_add_patient'),
 ]

@@ -1,0 +1,78 @@
+{% extends "base_staff.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Finance Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="h4 mb-3">
+            <i class="fas fa-coins text-success me-2"></i>
+            {% trans "Finance Dashboard" %}
+        </h2>
+        <p class="text-muted">
+            {% trans "Welcome" %}, {{ request.user.first_name }}
+        </p>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-6">
+        <div class="mobile-card text-center p-3">
+            <i class="fas fa-users fa-2x text-primary mb-2"></i>
+            <h3 class="h5 mb-1">{{ patients_count }}</h3>
+            <small class="text-muted">{% trans "Total Patients" %}</small>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="mobile-card text-center p-3">
+            <i class="fas fa-file-invoice fa-2x text-success mb-2"></i>
+            <h3 class="h5 mb-1">{{ files_count }}</h3>
+            <small class="text-muted">{% trans "Bills/Invoices" %}</small>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-2 mb-4">
+    <div class="col-6">
+        <a href="{% url 'staff:patient_search' %}" class="btn btn-outline-primary touch-btn w-100">
+            <i class="fas fa-search me-2"></i>{% trans "Find Patient" %}
+        </a>
+    </div>
+    <div class="col-6">
+        <a href="{% url 'staff:recent_patients' %}" class="btn btn-outline-success touch-btn w-100">
+            <i class="fas fa-clock me-2"></i>{% trans "Recent Patients" %}
+        </a>
+    </div>
+</div>
+
+<!-- Recent Patients -->
+<div class="row">
+    <div class="col-12">
+        <h5 class="mb-3">{% trans "Recent Patients" %}</h5>
+        
+        {% if recent_patients %}
+            {% for patient in recent_patients %}
+            <a href="{% url 'staff:patient_detail' patient.id %}" class="patient-item text-decoration-none">
+                <div class="patient-avatar">
+                    {{ patient.first_name|first }}{{ patient.last_name|first }}
+                </div>
+                <div class="patient-info">
+                    <div class="patient-name">{{ patient.get_full_name }}</div>
+                    <div class="patient-meta">
+                        <span>MRN: {{ patient.mrn }}</span>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-muted"></i>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="mobile-card text-center py-4">
+                <p class="text-muted mb-0">{% trans "No recent patients" %}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

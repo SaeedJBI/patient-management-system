@@ -32,6 +32,10 @@ class PatientSearchManager:
         if self.staff.role == 'branch_admin':
             return Patient.objects.filter(branch=self.staff.branch)
         
+        # Doctor, receptionist, finance see all patients in branch
+        if self.staff.role in ['doctor', 'receptionist', 'finance']:
+            return Patient.objects.filter(branch=self.staff.branch)
+        
         return self.staff.assigned_patients.all()
     
     def search(self, query, filters=None, page=1, page_size=20):

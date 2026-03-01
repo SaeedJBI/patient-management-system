@@ -1,0 +1,132 @@
+{% extends "base_staff.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "My Profile" %}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="h4 mb-3">
+            <i class="fas fa-user-circle text-primary me-2"></i>
+            {% trans "My Profile" %}
+        </h2>
+    </div>
+</div>
+
+<!-- Profile Header -->
+<div class="mobile-card text-center mb-4">
+    <div class="py-3">
+        <div class="patient-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 32px;">
+            {{ user.first_name|first }}{{ user.last_name|first }}
+        </div>
+        <h3 class="h5 mb-1">{{ user.get_full_name }}</h3>
+        <p class="text-muted mb-2">{{ user.email }}</p>
+        {% if staff %}
+        <span class="badge bg-primary">{{ staff.get_role_display }}</span>
+        <span class="badge bg-info">{{ staff.branch.name }}</span>
+        {% else %}
+        <span class="badge bg-warning">{% trans "Super Admin" %}</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats -->
+{% if staff %}
+<div class="row g-3 mb-4">
+    <div class="col-6">
+        <div class="mobile-card text-center p-3">
+            <i class="fas fa-users fa-2x text-primary mb-2"></i>
+            <h3 class="h5 mb-1">{{ patients_count }}</h3>
+            <small class="text-muted">{% trans "Assigned Patients" %}</small>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="mobile-card text-center p-3">
+            <i class="fas fa-file-medical fa-2x text-success mb-2"></i>
+            <h3 class="h5 mb-1">{{ files_count }}</h3>
+            <small class="text-muted">{% trans "Files Uploaded" %}</small>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Profile Information -->
+<div class="mobile-card mb-4">
+    <h6 class="mb-3">{% trans "Account Information" %}</h6>
+    
+    <div class="row g-3">
+        <div class="col-6">
+            <small class="text-muted d-block">{% trans "First Name" %}</small>
+            <strong>{{ user.first_name }}</strong>
+        </div>
+        <div class="col-6">
+            <small class="text-muted d-block">{% trans "Last Name" %}</small>
+            <strong>{{ user.last_name }}</strong>
+        </div>
+        <div class="col-12">
+            <small class="text-muted d-block">{% trans "Email" %}</small>
+            <strong>{{ user.email }}</strong>
+        </div>
+        <div class="col-6">
+            <small class="text-muted d-block">{% trans "Language" %}</small>
+            <strong>{{ user.get_language_display }}</strong>
+        </div>
+        <div class="col-6">
+            <small class="text-muted d-block">{% trans "Member Since" %}</small>
+            <strong>{{ user.date_joined|date:"Y-m-d" }}</strong>
+        </div>
+    </div>
+</div>
+
+<!-- Staff Information -->
+{% if staff %}
+<div class="mobile-card mb-4">
+    <h6 class="mb-3">{% trans "Staff Information" %}</h6>
+    
+    <div class="row g-3">
+        <div class="col-6">
+            <small class="text-muted d-block">{% trans "Employee ID" %}</small>
+            <strong>{{ staff.employee_id }}</strong>
+        </div>
+        <div class="col-6">
+            <small class="text-muted d-block">{% trans "Role" %}</small>
+            <strong>{{ staff.get_role_display }}</strong>
+        </div>
+        <div class="col-6">
+            <small class="text-muted d-block">{% trans "Branch" %}</small>
+            <strong>{{ staff.branch.name }}</strong>
+        </div>
+        <div class="col-6">
+            <small class="text-muted d-block">{% trans "Joined" %}</small>
+            <strong>{{ staff.joined_date|date:"Y-m-d" }}</strong>
+        </div>
+        {% if staff.specialization %}
+        <div class="col-12">
+            <small class="text-muted d-block">{% trans "Specialization" %}</small>
+            <strong>{{ staff.specialization }}</strong>
+        </div>
+        {% endif %}
+        {% if staff.license_number %}
+        <div class="col-12">
+            <small class="text-muted d-block">{% trans "License Number" %}</small>
+            <strong>{{ staff.license_number }}</strong>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Actions -->
+<div class="row g-2">
+    <div class="col-6">
+        <a href="{% url 'admin:password_change' %}" class="btn btn-outline-primary touch-btn w-100">
+            <i class="fas fa-key me-2"></i>{% trans "Change Password" %}
+        </a>
+    </div>
+    <div class="col-6">
+        <a href="{% url 'admin:logout' %}" class="btn btn-outline-danger touch-btn w-100">
+            <i class="fas fa-sign-out-alt me-2"></i>{% trans "Logout" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% load i18n %}
+<div class="mobile-card mb-2">
+    <div class="d-flex align-items-center">
+        <div class="me-3">
+            {% if file.is_image %}
+                <i class="fas fa-image fa-2x text-info"></i>
+            {% elif file.is_pdf %}
+                <i class="fas fa-file-pdf fa-2x text-danger"></i>
+            {% elif file.file_extension == 'doc' or file.file_extension == 'docx' %}
+                <i class="fas fa-file-word fa-2x text-primary"></i>
+            {% elif file.file_extension == 'xls' or file.file_extension == 'xlsx' %}
+                <i class="fas fa-file-excel fa-2x text-success"></i>
+            {% elif file.file_extension == 'txt' or file.file_extension == 'csv' %}
+                <i class="fas fa-file-alt fa-2x text-secondary"></i>
+            {% else %}
+                <i class="fas fa-file-medical fa-2x text-secondary"></i>
+            {% endif %}
+        </div>
+        <div class="flex-grow-1">
+            <h6 class="mb-1">{{ file.title }}</h6>
+            <small class="text-muted">
+                {% if file.uploaded_by.get_full_name %}
+                    {{ file.uploaded_by.get_full_name }}
+                {% else %}
+                    {{ file.uploaded_by.email }}
+                {% endif %}
+                • 
+                {{ file.created_at|date:"Y-m-d H:i" }} • 
+                {{ file.file_size_display }}
+            </small>
+            {% if file.description %}
+                <p class="small text-muted mt-1 mb-0">{{ file.description|truncatechars:100 }}</p>
+            {% endif %}
+        </div>
+        <div class="btn-group" role="group">
+            <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-outline-secondary" title="{% trans 'Download' %}">
+                <i class="fas fa-download"></i>
+            </a>
+        </div>
+    </div>
+</div>

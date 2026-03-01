@@ -15,26 +15,29 @@ ROLE_CHOICES = [
     ('pharmacist', _('Pharmacist')),
     ('nutritionist', _('Nutritionist')),
     ('receptionist', _('Receptionist')),
+    ('finance', _('Finance Staff')),
     ('branch_admin', _('Branch Admin')),
     ('super_admin', _('Super Admin')),
 ]
 
 # File categories each role can upload
 ROLE_CATEGORY_PERMISSIONS = {
-    'doctor': ['medical_report', 'prescription', 'lab_result', 'imaging', 'note'],
-    'pharmacist': ['prescription', 'receipt', 'medicine_info', 'note'],
-    'nutritionist': ['nutrition_plan', 'diet_program', 'food_diary', 'note'],
-    'receptionist': ['appointment', 'visit_note', 'consent', 'note'],
-    'branch_admin': ['all'],  # Can upload anything in their branch
-    'super_admin': ['all'],   # Can upload anything anywhere
+    'doctor': ['medical_report', 'note'],  # Only medical reports
+    'pharmacist': ['prescription' , 'note'],  # Medicine receipts
+    'nutritionist': ['diet_program', 'note'],  # Diet programs
+    'receptionist': ['appointment', 'visit_note', 'consent', 'note'],  # No file uploads except notes
+    'finance': ['bill_monthly', 'bill_yearly', 'invoice'],  # NEW: Finance staff upload bills
+    'branch_admin': ['all'],
+    'super_admin': ['all'],
 }
 
 # View permissions (what each role can see)
 ROLE_VIEW_PERMISSIONS = {
-    'doctor': ['all_patient_files', 'medical_history', 'lab_results'],
-    'pharmacist': ['medication_history', 'prescriptions', 'receipts'],
-    'nutritionist': ['nutrition_history', 'diet_plans'],
-    'receptionist': ['appointments', 'demographics_readonly'],
+    'doctor': ['all_patients'],  # Can see all patients
+    'pharmacist': ['assigned_patients_only'],  # Only assigned
+    'nutritionist': ['assigned_patients_only'],  # Only assigned
+    'receptionist': ['all_patients'],  # Can see all patients
+    'finance': ['all_patients'],  # Can see all patients (for billing)
     'branch_admin': ['all_in_branch'],
     'super_admin': ['all'],
 }
@@ -170,7 +173,11 @@ class Staff(models.Model):
         if self.role == 'branch_admin' and patient.branch == self.branch:
             return True
         
-        # Regular staff can only view assigned patients
+        # Doctors, receptionists, and finance can view all patients in branch
+        if self.role in ['doctor', 'receptionist', 'finance'] and patient.branch == self.branch:
+            return True
+        
+        # Regular staff (pharmacist, nutritionist) can only view assigned patients
         return self.assigned_patients.filter(id=patient.id).exists()
     
     def can_edit_demographics(self):
@@ -180,17 +187,99 @@ class Staff(models.Model):
         # Only admins can edit demographics
         return self.role in ['branch_admin', 'super_admin']
     
+    def can_create_patients(self):
+        """
+        Check if staff can create new patients.
+        """
+        return self.role in ['receptionist', 'branch_admin', 'super_admin']
+    
+    def can_modify_created_at(self):
+        """
+        Check if staff can modify the created_at field (for back-dating).
+        """
+        return self.role in ['receptionist', 'branch_admin', 'super_admin']
+    
+    def can_view_all_patients(self):
+        """
+        Check if staff can view all patients in branch/system.
+        """
+        if self.role == 'super_admin':
+            return True
+        
+        if self.role == 'branch_admin':
+            return True
+        
+        if self.role in ['doctor', 'receptionist', 'finance']:
+            return True
+        
+        return False
+    
+    def can_view_own_uploads_only(self):
+        """
+        Check if staff should only see files they uploaded.
+        """
+        return self.role in ['nutritionist', 'pharmacist']
+    
     def get_visible_patients(self):
         """
         Get queryset of patients this staff member can see.
+        Updated with new rules.
         """
+        from patients.models import Patient
+        
+        # Super admin sees all
         if self.role == 'super_admin':
             return Patient.objects.all()
         
+        # Branch admin sees all in branch
         if self.role == 'branch_admin':
             return Patient.objects.filter(branch=self.branch)
         
+        # Doctor, receptionist, finance see all patients in branch
+        if self.role in ['doctor', 'receptionist', 'finance']:
+            return Patient.objects.filter(branch=self.branch)
+        
+        # Pharmacist and Nutritionist only see assigned patients
         return self.assigned_patients.all()
+    
+    def get_visible_files(self, patient=None):
+        """
+        Get files this staff member can see.
+        Updated rules:
+        - Super admin, branch admin: see all
+        - Doctors: see all files for their patients
+        - Receptionists: only see files uploaded by receptionists
+        - Finance: see all files (for billing)
+        - Nutritionists, Pharmacists: only see their own uploads
+        """
+        from files.models import MedicalFile
+        
+        base_qs = MedicalFile.objects.all()
+        
+        if patient:
+            base_qs = base_qs.filter(patient=patient)
+        
+        # Super admin and branch admin see all
+        if self.role in ['super_admin', 'branch_admin']:
+            return base_qs
+        
+        # Doctors see all files for their patients
+        if self.role == 'doctor':
+            return base_qs.filter(patient__in=self.get_visible_patients())
+        
+        # FINANCE see all files (for billing purposes)
+        if self.role == 'finance':
+            return base_qs.filter(patient__in=self.get_visible_patients())
+        
+        # RECEPTIONISTS only see files uploaded by receptionists
+        if self.role == 'receptionist':
+            return base_qs.filter(
+                patient__in=self.get_visible_patients(),
+                uploaded_by__staff_profile__role='receptionist'
+            )
+        
+        # Nutritionists and Pharmacists only see their own uploads
+        return base_qs.filter(uploaded_by=self.user)
     
     def assign_patient(self, patient):
         """

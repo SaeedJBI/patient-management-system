@@ -33,31 +33,26 @@ class MedicalFile(models.Model):
     """
     
     CATEGORY_CHOICES = [
-        # Medical (Doctors)
+        # Doctors - Medical reports only
         ('medical_report', _('Medical Report')),
+        
+        # Pharmacists - Medicine receipts/prescriptions
         ('prescription', _('Prescription')),
-        ('lab_result', _('Lab Result')),
-        ('imaging', _('Imaging/X-Ray')),
         
-        # Pharmacy
-        ('receipt', _('Receipt/Invoice')),
-        ('medicine_info', _('Medicine Information')),
-        
-        # Nutrition
-        ('nutrition_plan', _('Nutrition Plan')),
+        # Nutritionists - Diet programs
         ('diet_program', _('Diet Program')),
-        ('food_diary', _('Food Diary')),
         
-        # Reception
+        # Receptionists - Appointments and notes
         ('appointment', _('Appointment')),
         ('visit_note', _('Visit Note')),
         
-        # General
+        # Finance - Bills
+        ('bill_monthly', _('Monthly Bill')),
+        ('bill_yearly', _('Yearly Bill')),
+        ('invoice', _('Invoice')),
+        
+        # General - Notes (everyone can upload notes)
         ('note', _('General Note')),
-        ('identification', _('Identification Document')),
-        ('insurance', _('Insurance Document')),
-        ('consent', _('Consent Form')),
-        ('other', _('Other')),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -199,35 +194,53 @@ class MedicalFile(models.Model):
         # Run validation
         self.clean()
         
+        # Handle file uploads
+        if self.file:
+            # ALWAYS extract extension from the filename
+            filename = self.file.name
+            if '.' in filename:
+                self.file_extension = filename.split('.')[-1].lower()
+            
+            # Store original filename if not already set
+            if not self.original_filename:
+                self.original_filename = self.file.name
+        
         # Handle new file uploads
         if self.file and not self.pk:  # New file upload
-            # Store original filename
-            self.original_filename = self.file.name
-            
-            # Get file extension
-            self.file_extension = os.path.splitext(self.file.name)[1].lower().lstrip('.')
-            
             # Save first to ensure file is stored
             super().save(*args, **kwargs)
             
-            # Now that file is saved, get its properties
-            if self.file and hasattr(self.file, 'size'):
-                self.file_size = self.file.size
+            # Now get all metadata from the saved file
+            update_fields = []
             
-            if self.file and hasattr(self.file.file, 'content_type'):
+            # Get file size
+            if hasattr(self.file, 'size'):
+                self.file_size = self.file.size
+                update_fields.append('file_size')
+            
+            # Get content type
+            if hasattr(self.file.file, 'content_type'):
                 self.content_type = self.file.file.content_type
+                update_fields.append('content_type')
             
             # Calculate checksum
-            if self.file:
-                sha256 = hashlib.sha256()
-                self.file.seek(0)  # Go to beginning of file
-                for chunk in self.file.chunks():
-                    sha256.update(chunk)
-                self.checksum = sha256.hexdigest()
-                self.file.seek(0)  # Reset for future reads
+            sha256 = hashlib.sha256()
+            self.file.seek(0)
+            for chunk in self.file.chunks():
+                sha256.update(chunk)
+            self.checksum = sha256.hexdigest()
+            self.file.seek(0)
+            update_fields.append('checksum')
+            
+            # Add other fields if they were set
+            if self.file_extension:
+                update_fields.append('file_extension')
+            if self.original_filename:
+                update_fields.append('original_filename')
             
             # Update with metadata
-            super().save(update_fields=['file_size', 'content_type', 'checksum'])
+            if update_fields:
+                super().save(update_fields=update_fields)
         else:
             super().save(*args, **kwargs)
     
@@ -264,8 +277,17 @@ class MedicalFile(models.Model):
     @property
     def file_size_display(self):
         """Return human-readable file size."""
-        if not self.file_size:
-            return _("Unknown")
+        if self.file_size is None:
+            # Try to get size from file if not in database
+            if self.file and hasattr(self.file, 'size'):
+                try:
+                    self.file_size = self.file.size
+                    self.save(update_fields=['file_size'])
+                except:
+                    return _("Unknown")
+            else:
+                return _("Unknown")
+        
         size = self.file_size
         for unit in [_('B'), _('KB'), _('MB'), _('GB')]:
             if size < 1024.0:
@@ -292,3 +314,9 @@ class MedicalFile(models.Model):
     def is_document(self):
         """Check if file is a document (Word, Excel, etc.)."""
         return self.file_extension.lower() in ['doc', 'docx', 'xls', 'xlsx', 'txt', 'csv']
+    
+    @property
+    def can_preview(self):
+        """Check if file can be previewed in browser."""
+        previewable_extensions = ['jpg', 'jpeg', 'png', 'gif', 'tiff', 'pdf', 'txt', 'csv']
+        return self.file_extension.lower() in previewable_extensions

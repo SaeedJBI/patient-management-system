@@ -1,0 +1,465 @@
+{% extends "base_staff.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "My Uploads" %}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="h4 mb-3">
+            <i class="fas fa-upload text-primary me-2"></i>
+            {% trans "File Management" %}
+        </h2>
+        <p class="text-muted">
+            {% trans "Track and manage all files in the system" %}
+        </p>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="row g-2 mb-4">
+    <div class="col-3">
+        <div class="mobile-card text-center p-2">
+            <h3 class="h6 mb-0">{{ total_files|default:files|length }}</h3>
+            <small class="text-muted">{% trans "Total Files" %}</small>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="mobile-card text-center p-2">
+            <h3 class="h6 mb-0">{{ unique_patients_count|default:"0" }}</h3>
+            <small class="text-muted">{% trans "Patients" %}</small>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="mobile-card text-center p-2">
+            <h3 class="h6 mb-0">{{ unique_staff_count|default:"0" }}</h3>
+            <small class="text-muted">{% trans "Staff" %}</small>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="mobile-card text-center p-2">
+            <h3 class="h6 mb-0">{{ total_size|default:"0 MB" }}</h3>
+            <small class="text-muted">{% trans "Total Size" %}</small>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Filters -->
+<div class="mobile-card mb-4 p-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0"><i class="fas fa-filter me-2"></i>{% trans "Filters" %}</h6>
+        <button id="toggle-filters" class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+            <i class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+    
+    <div id="filterPanel" class="collapse show">
+        <div class="row g-2">
+            <!-- Search -->
+            <div class="col-12">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" 
+                           id="file-search" 
+                           class="form-control" 
+                           placeholder="{% trans 'Search in file title, description...' %}">
+                </div>
+            </div>
+            
+            <!-- File Category -->
+            <div class="col-6 col-md-3">
+                <select id="category-filter" class="form-select form-select-sm">
+                    <option value="">{% trans "All Categories" %}</option>
+                    {% for value, display in category_choices %}
+                        <option value="{{ value }}">{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Patient Filter -->
+            <div class="col-6 col-md-3">
+                <select id="patient-filter" class="form-select form-select-sm">
+                    <option value="">{% trans "All Patients" %}</option>
+                    {% for patient in all_patients %}
+                        <option value="{{ patient.id }}">{{ patient.get_full_name }} ({{ patient.mrn }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Staff Filter (Who uploaded) -->
+            <div class="col-6 col-md-3">
+                <select id="staff-filter" class="form-select form-select-sm">
+                    <option value="">{% trans "All Staff" %}</option>
+                    {% for staff_member in all_staff %}
+                        <option value="{{ staff_member.user.id }}">{{ staff_member.user.get_full_name }} ({{ staff_member.get_role_display }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Role Filter -->
+            <div class="col-6 col-md-3">
+                <select id="role-filter" class="form-select form-select-sm">
+                    <option value="">{% trans "All Roles" %}</option>
+                    {% for value, display in role_choices %}
+                        <option value="{{ value }}">{{ display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Branch Filter -->
+            <div class="col-6 col-md-3">
+                <select id="branch-filter" class="form-select form-select-sm">
+                    <option value="">{% trans "All Branches" %}</option>
+                    {% for branch in all_branches %}
+                        <option value="{{ branch.id }}">{{ branch.name }} ({{ branch.code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Date Range -->
+            <div class="col-6 col-md-3">
+                <select id="date-filter" class="form-select form-select-sm">
+                    <option value="all">{% trans "All Time" %}</option>
+                    <option value="today">{% trans "Today" %}</option>
+                    <option value="week">{% trans "This Week" %}</option>
+                    <option value="month">{% trans "This Month" %}</option>
+                    <option value="custom">{% trans "Custom Range" %}</option>
+                </select>
+            </div>
+            
+            <!-- File Type -->
+            <div class="col-6 col-md-3">
+                <select id="type-filter" class="form-select form-select-sm">
+                    <option value="">{% trans "All Types" %}</option>
+                    <option value="image">{% trans "Images" %}</option>
+                    <option value="pdf">{% trans "PDF" %}</option>
+                    <option value="document">{% trans "Documents" %}</option>
+                    <option value="other">{% trans "Other" %}</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Custom Date Range (hidden by default) -->
+        <div id="custom-date-range" class="row g-2 mt-2 d-none">
+            <div class="col-6">
+                <label class="small text-muted">{% trans "From" %}</label>
+                <input type="date" id="date-from" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+                <label class="small text-muted">{% trans "To" %}</label>
+                <input type="date" id="date-to" class="form-control form-control-sm">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Bar -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <span id="result-count" class="badge bg-info">{{ files|length }} {% trans "files" %}</span>
+        <span id="active-filters" class="small text-muted ms-2"></span>
+    </div>
+    <div>
+        <button id="clear-filters" class="btn btn-sm btn-outline-secondary d-none" onclick="clearFilters()">
+            <i class="fas fa-times me-1"></i>{% trans "Clear All" %}
+        </button>
+    </div>
+</div>
+
+<!-- Files List - Mobile First Single Column -->
+<div id="files-container" class="files-list">
+    {% if files %}
+        {% for file in files %}
+        <div class="file-item-wrapper mb-2" 
+             data-category="{{ file.category }}"
+             data-patient="{{ file.patient.id }}"
+             data-staff="{{ file.uploaded_by.id }}"
+             data-role="{{ file.uploaded_by.staff_profile.role|default:'super_admin' }}"
+             data-branch="{{ file.patient.branch.id }}"
+             data-type="{% if file.is_image %}image{% elif file.is_pdf %}pdf{% elif file.is_document %}document{% else %}other{% endif %}"
+             data-date="{{ file.created_at|date:'Y-m-d' }}"
+             data-search="{{ file.title|lower }} {{ file.description|lower }} {{ file.patient.get_full_name|lower }} {{ file.uploaded_by.get_full_name|lower }}">
+            
+            <!-- Mobile-First List Item -->
+            <div class="mobile-card p-3">
+                <div class="d-flex align-items-start">
+                    <!-- File Icon - Visible on all devices -->
+                    <div class="me-3">
+                        {% if file.is_image %}
+                            <i class="fas fa-image fa-2x text-info"></i>
+                        {% elif file.is_pdf %}
+                            <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                        {% elif file.file_extension == 'doc' or file.file_extension == 'docx' %}
+                            <i class="fas fa-file-word fa-2x text-primary"></i>
+                        {% elif file.file_extension == 'xls' or file.file_extension == 'xlsx' %}
+                            <i class="fas fa-file-excel fa-2x text-success"></i>
+                        {% else %}
+                            <i class="fas fa-file-medical fa-2x text-secondary"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- File Details - Takes remaining space -->
+                    <div class="flex-grow-1 min-width-0">
+                        <!-- Title and Date - Stack on mobile -->
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-1">
+                            <h6 class="mb-0 text-truncate">{{ file.title }}</h6>
+                            <small class="text-muted text-nowrap">{{ file.created_at|date:"Y-m-d" }}</small>
+                        </div>
+                        
+                        <!-- Metadata - Wrap on mobile -->
+                        <div class="small text-muted mb-1">
+                            <span class="d-inline-block me-2">
+                                <i class="fas fa-user me-1"></i>{{ file.patient.get_full_name }}
+                            </span>
+                            <span class="d-inline-block me-2">
+                                <i class="fas fa-tag me-1"></i>{{ file.get_category_display }}
+                            </span>
+                            <span class="d-inline-block">
+                                <i class="fas fa-upload me-1"></i>{{ file.uploaded_by.get_full_name }}
+                            </span>
+                        </div>
+                        
+                        <!-- File Size and Type - Hide on smallest screens -->
+                        <div class="small text-muted d-none d-sm-block">
+                            <span class="me-2"><i class="fas fa-weight me-1"></i>{{ file.file_size_display }}</span>
+                            <span><i class="fas fa-file me-1"></i>{{ file.file_extension|upper }}</span>
+                        </div>
+                        
+                        <!-- Description - Optional, hide on mobile -->
+                        {% if file.description %}
+                            <p class="small text-muted mt-2 mb-0 d-none d-md-block">{{ file.description|truncatechars:150 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Download Button - Always visible -->
+                    <a href="{% url 'files:file_download' file.id %}" class="btn btn-sm btn-outline-primary ms-2">
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="mobile-card text-center py-5">
+                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-0">{% trans "No files uploaded yet" %}</p>
+                <a href="{% url 'staff:patient_search' %}" class="btn btn-primary touch-btn mt-3">
+                    <i class="fas fa-search me-2"></i>{% trans "Find Patient to Upload" %}
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- No Results -->
+<div id="no-results" class="mobile-card text-center py-5 d-none">
+    <i class="fas fa-filter fa-3x text-muted mb-3"></i>
+    <p class="text-muted mb-0">{% trans "No files match your filters" %}</p>
+    <button class="btn btn-outline-primary touch-btn mt-3" onclick="clearFilters()">
+        <i class="fas fa-times me-2"></i>{% trans "Clear Filters" %}
+    </button>
+</div>
+
+<script>
+// Get filter elements
+const searchInput = document.getElementById('file-search');
+const categoryFilter = document.getElementById('category-filter');
+const patientFilter = document.getElementById('patient-filter');
+const staffFilter = document.getElementById('staff-filter');
+const roleFilter = document.getElementById('role-filter');
+const branchFilter = document.getElementById('branch-filter');
+const dateFilter = document.getElementById('date-filter');
+const typeFilter = document.getElementById('type-filter');
+const dateFrom = document.getElementById('date-from');
+const dateTo = document.getElementById('date-to');
+const customDateRange = document.getElementById('custom-date-range');
+const fileItems = document.querySelectorAll('.file-item-wrapper');
+const noResults = document.getElementById('no-results');
+const clearFiltersBtn = document.getElementById('clear-filters');
+const resultCountSpan = document.getElementById('result-count');
+const activeFiltersSpan = document.getElementById('active-filters');
+
+// Toggle custom date range
+dateFilter.addEventListener('change', function() {
+    if (this.value === 'custom') {
+        customDateRange.classList.remove('d-none');
+    } else {
+        customDateRange.classList.add('d-none');
+    }
+    filterFiles();
+});
+
+function filterFiles() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const category = categoryFilter.value;
+    const patient = patientFilter.value;
+    const staff = staffFilter.value;
+    const role = roleFilter.value;
+    const branch = branchFilter.value;
+    const dateRange = dateFilter.value;
+    const fileType = typeFilter.value;
+    const fromDate = dateFrom.value ? new Date(dateFrom.value) : null;
+    const toDate = dateTo.value ? new Date(dateTo.value) : null;
+    
+    let visibleCount = 0;
+    let activeFilterCount = 0;
+    
+    // Count active filters
+    if (searchTerm) activeFilterCount++;
+    if (category) activeFilterCount++;
+    if (patient) activeFilterCount++;
+    if (staff) activeFilterCount++;
+    if (role) activeFilterCount++;
+    if (branch) activeFilterCount++;
+    if (dateRange !== 'all') activeFilterCount++;
+    if (fileType) activeFilterCount++;
+    
+    // Update active filters text
+    if (activeFilterCount > 0) {
+        activeFiltersSpan.textContent = `(${activeFilterCount} {% trans "active filters" %})`;
+        clearFiltersBtn.classList.remove('d-none');
+    } else {
+        activeFiltersSpan.textContent = '';
+        clearFiltersBtn.classList.add('d-none');
+    }
+    
+    // Get date threshold for predefined ranges
+    let dateThreshold = null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (dateRange === 'today') {
+        dateThreshold = today;
+    } else if (dateRange === 'week') {
+        dateThreshold = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    } else if (dateRange === 'month') {
+        dateThreshold = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    }
+    
+    fileItems.forEach(item => {
+        const searchText = item.dataset.search || '';
+        const itemCategory = item.dataset.category;
+        const itemPatient = item.dataset.patient;
+        const itemStaff = item.dataset.staff;
+        const itemRole = item.dataset.role;
+        const itemBranch = item.dataset.branch;
+        const itemType = item.dataset.type;
+        const itemDate = new Date(item.dataset.date);
+        
+        let matchesSearch = searchTerm === '' || searchText.includes(searchTerm);
+        let matchesCategory = category === '' || itemCategory === category;
+        let matchesPatient = patient === '' || itemPatient === patient;
+        let matchesStaff = staff === '' || itemStaff === staff;
+        let matchesRole = role === '' || itemRole === role;
+        let matchesBranch = branch === '' || itemBranch === branch;
+        let matchesType = fileType === '' || itemType === fileType;
+        let matchesDate = true;
+        
+        if (dateRange === 'custom') {
+            if (fromDate) matchesDate = matchesDate && itemDate >= fromDate;
+            if (toDate) {
+                const nextDay = new Date(toDate);
+                nextDay.setDate(nextDay.getDate() + 1);
+                matchesDate = matchesDate && itemDate < nextDay;
+            }
+        } else if (dateThreshold) {
+            matchesDate = itemDate >= dateThreshold;
+        }
+        
+        if (matchesSearch && matchesCategory && matchesPatient && matchesStaff && 
+            matchesRole && matchesBranch && matchesType && matchesDate) {
+            item.style.display = 'block';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Update result count
+    resultCountSpan.textContent = visibleCount + ' {% trans "files" %}';
+    
+    // Show/hide no results message
+    if (visibleCount === 0 && fileItems.length > 0) {
+        noResults.classList.remove('d-none');
+        document.getElementById('files-container').classList.add('d-none');
+    } else {
+        noResults.classList.add('d-none');
+        document.getElementById('files-container').classList.remove('d-none');
+    }
+}
+
+function clearFilters() {
+    searchInput.value = '';
+    categoryFilter.value = '';
+    patientFilter.value = '';
+    staffFilter.value = '';
+    roleFilter.value = '';
+    branchFilter.value = '';
+    dateFilter.value = 'all';
+    typeFilter.value = '';
+    dateFrom.value = '';
+    dateTo.value = '';
+    customDateRange.classList.add('d-none');
+    filterFiles();
+}
+
+// Event listeners
+searchInput.addEventListener('input', filterFiles);
+categoryFilter.addEventListener('change', filterFiles);
+patientFilter.addEventListener('change', filterFiles);
+staffFilter.addEventListener('change', filterFiles);
+roleFilter.addEventListener('change', filterFiles);
+branchFilter.addEventListener('change', filterFiles);
+dateFilter.addEventListener('change', filterFiles);
+typeFilter.addEventListener('change', filterFiles);
+dateFrom.addEventListener('change', filterFiles);
+dateTo.addEventListener('change', filterFiles);
+
+// Initialize
+filterFiles();
+</script>
+
+<style>
+/* Mobile-first list styles */
+.files-list {
+    width: 100%;
+}
+
+.file-item-wrapper {
+    width: 100%;
+}
+
+/* Ensure text truncation works */
+.min-width-0 {
+    min-width: 0;
+}
+
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .mobile-card {
+        padding: 12px !important;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* Hover effect on desktop */
+@media (min-width: 768px) {
+    .file-item-wrapper:hover .mobile-card {
+        background-color: #f8f9fa;
+        transition: background-color 0.2s;
+    }
+}
+</style>
+{% endblock %}

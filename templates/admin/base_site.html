@@ -3,10 +3,16 @@
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('PMS Admin') }}{% endblock %}
 
+{% block extrastyle %}
+{{ block.super }}
+<!-- Font Awesome for admin icons (local - faster loading) -->
+<link href="{% static 'css/fontawesome.min.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block branding %}
 <h1 id="site-name">
     <a href="{% url 'admin:index' %}">
-        {% translate 'Patient Management System' %}
+        <i class="fas fa-hospital me-2"></i>{% translate 'Patient Management System' %}
     </a>
 </h1>
 {% endblock %}

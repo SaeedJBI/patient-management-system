@@ -1,0 +1,42 @@
+{% extends "base_staff.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Recent Patients" %}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="h4 mb-3">
+            <i class="fas fa-clock text-primary me-2"></i>
+            {% trans "Recent Patients" %}
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        {% if patients %}
+            {% for patient in patients %}
+            <a href="{% url 'staff:patient_detail' patient.id %}" class="patient-item text-decoration-none">
+                <div class="patient-avatar">
+                    {{ patient.first_name|first }}{{ patient.last_name|first }}
+                </div>
+                <div class="patient-info">
+                    <div class="patient-name">{{ patient.get_full_name }}</div>
+                    <div class="patient-meta">
+                        <span>MRN: {{ patient.mrn }}</span> • 
+                        <span>{% trans "Updated" %}: {{ patient.updated_at|timesince }} {% trans "ago" %}</span>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-muted"></i>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="mobile-card text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-0">{% trans "No recent patients" %}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

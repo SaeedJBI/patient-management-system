@@ -8,6 +8,8 @@
     
     <!-- Mobile-first Bootstrap -->
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    
+    <!-- Font Awesome 6 (local) - faster loading -->
     <link href="{% static 'css/fontawesome.min.css' %}" rel="stylesheet">
     
     <!-- Custom mobile-first styles -->
@@ -266,6 +268,23 @@
             </small>
         </div>
         
+        <!-- ===== LANGUAGE SWITCHER ADDED HERE FOR DESKTOP ===== -->
+        <div class="text-center mb-3">
+            <form action="{% url 'set_language' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.path }}">
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="submit" name="language" value="en" class="btn btn-outline-secondary {% if LANGUAGE_CODE == 'en' %}btn-primary text-white{% endif %}">
+                        EN
+                    </button>
+                    <button type="submit" name="language" value="ar" class="btn btn-outline-secondary {% if LANGUAGE_CODE == 'ar' %}btn-primary text-white{% endif %}">
+                        عربي
+                    </button>
+                </div>
+            </form>
+        </div>
+        <!-- ===== END LANGUAGE SWITCHER ===== -->
+        
         <div class="nav flex-column">
             <a href="{% url 'staff:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="fas fa-home me-2"></i> {% trans "Dashboard" %}
@@ -297,6 +316,16 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">PMS</h5>
                     <div>
+                        <!-- ===== LANGUAGE SWITCHER ADDED HERE FOR MOBILE ===== -->
+                        <form action="{% url 'set_language' %}" method="post" style="display: inline; margin-right: 8px;">
+                            {% csrf_token %}
+                            <input name="next" type="hidden" value="{{ request.path }}">
+                            <select name="language" onchange="this.form.submit()" class="form-select form-select-sm d-inline-block" style="width: auto; padding: 4px 24px 4px 8px;">
+                                <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>
+                                <option value="ar" {% if LANGUAGE_CODE == 'ar' %}selected{% endif %}>العربية</option>
+                            </select>
+                        </form>
+                        <!-- ===== END LANGUAGE SWITCHER ===== -->
                         <span class="badge bg-primary">
                             {% if request.user.staff_profile %}
                                 {{ request.user.staff_profile.get_role_display }}

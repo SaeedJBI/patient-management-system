@@ -15,18 +15,18 @@ from patients.models import Patient
 @login_required
 @staff_member_required
 @require_GET
-def serve_private_file(request, file_id):
+def serve_file(request, file_id):
     """
-    Securely serve private files to authenticated staff members.
-    This view checks permissions before serving the file.
+    Unified view to serve private files.
+    Automatically determines whether to preview or download based on:
+    - URL path (preview/ vs download/)
+    - File type (previewable or not)
     """
     # Get the file
     file_obj = get_object_or_404(MedicalFile, id=file_id, is_active=True)
     
-    # Permission check: Staff can only access files from their branch
+    # Permission check
     if not request.user.is_superuser:
-        # Superusers can access all files
-        # Regular staff can only access files from their branch
         if hasattr(request.user, 'staff_profile'):
             user_branch = request.user.staff_profile.branch
             if file_obj.patient.branch != user_branch:
@@ -37,10 +37,41 @@ def serve_private_file(request, file_id):
     # Increment download count
     file_obj.increment_download_count()
     
+    # Determine if this is a preview request
+    is_preview = 'preview' in request.path
+    
+    # Map file extensions to proper content types with encoding for text files
+    content_type_map = {
+        'txt': 'text/plain; charset=utf-8',
+        'csv': 'text/csv; charset=utf-8',
+        'pdf': 'application/pdf',
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'gif': 'image/gif',
+        'tiff': 'image/tiff',
+        'doc': 'application/msword',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'xls': 'application/vnd.ms-excel',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }
+    
+    # Get content type from map or use a safe default
+    content_type = content_type_map.get(file_obj.file_extension.lower(), 'application/octet-stream')
+    
     # Serve the file
     try:
-        response = FileResponse(file_obj.file, as_attachment=True)
-        response['Content-Disposition'] = f'attachment; filename="{file_obj.original_filename}"'
+        # Open the file and create response
+        file_content = file_obj.file.open()
+        response = FileResponse(file_content, content_type=content_type)
+        
+        if is_preview and file_obj.can_preview:
+            # For preview requests of previewable files, show inline
+            response['Content-Disposition'] = f'inline; filename="{file_obj.original_filename}"'
+        else:
+            # For download requests or non-previewable files, force download
+            response['Content-Disposition'] = f'attachment; filename="{file_obj.original_filename}"'
+        
         return response
     except FileNotFoundError:
         raise Http404(_("File not found."))

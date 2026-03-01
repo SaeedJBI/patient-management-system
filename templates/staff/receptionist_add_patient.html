@@ -1,0 +1,282 @@
+{% extends "base_staff.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Add New Patient" %}{% endblock %}
+
+{% block content %}
+<div class="mobile-card">
+    <div class="d-flex align-items-center mb-4">
+        <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary me-3">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h4 class="h5 mb-0">{% trans "Add New Patient" %}</h4>
+    </div>
+    
+    <form method="post" action="{% url 'staff:receptionist_add_patient' %}">
+        {% csrf_token %}
+        
+        <!-- Personal Information Section -->
+        <h6 class="mb-3">{% trans "Personal Information" %}</h6>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label class="form-label">{% trans "First Name" %} *</label>
+                <input type="text" name="first_name" class="form-control" required>
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Middle Name" %}</label>
+                <input type="text" name="middle_name" class="form-control">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Last Name" %} *</label>
+                <input type="text" name="last_name" class="form-control" required>
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label">{% trans "Mother's Name" %}</label>
+                <input type="text" name="mother_name" class="form-control">
+                <small class="text-muted">{% trans "Important for family relations" %}</small>
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Date of Birth" %} *</label>
+                <input type="date" name="date_of_birth" class="form-control" required max="{{ today }}">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Place of Birth" %}</label>
+                <input type="text" name="place_of_birth" class="form-control" placeholder="e.g., Amman">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Gender" %} *</label>
+                <select name="gender" class="form-select" required>
+                    <option value="">{% trans "Select..." %}</option>
+                    <option value="M">{% trans "Male" %}</option>
+                    <option value="F">{% trans "Female" %}</option>
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Marital Status" %}</label>
+                <select name="marital_status" class="form-select">
+                    <option value="">{% trans "Select..." %}</option>
+                    <option value="single">{% trans "Single" %}</option>
+                    <option value="married">{% trans "Married" %}</option>
+                    <option value="divorced">{% trans "Divorced" %}</option>
+                    <option value="widowed">{% trans "Widowed" %}</option>
+                </select>
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label">{% trans "Nationality" %}</label>
+                <input type="text" name="nationality" class="form-control" value="Jordanian">
+            </div>
+        </div>
+        
+        <!-- Identification Section -->
+        <h6 class="mb-3">{% trans "Identification" %}</h6>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">{% trans "National ID" %} *</label>
+                <input type="text" name="national_id" class="form-control" required>
+                <small class="text-muted">{% trans "Unique identification number" %}</small>
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label">{% trans "Medical Record Number (MRN)" %}</label>
+                <input type="text" name="mrn" class="form-control" readonly disabled>
+                <small class="text-muted">{% trans "Will be auto-generated" %}</small>
+            </div>
+        </div>
+        
+        <!-- Contact Information Section -->
+        <h6 class="mb-3">{% trans "Contact Information" %}</h6>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Mobile Phone" %} *</label>
+                <input type="tel" name="phone_mobile" class="form-control" required>
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Home Phone" %}</label>
+                <input type="tel" name="phone_home" class="form-control">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Work Phone" %}</label>
+                <input type="tel" name="phone_work" class="form-control">
+            </div>
+            
+            <div class="col-md-12">
+                <label class="form-label">{% trans "Email" %}</label>
+                <input type="email" name="email" class="form-control">
+            </div>
+        </div>
+        
+        <!-- Address Section -->
+        <h6 class="mb-3">{% trans "Address" %}</h6>
+        <div class="row g-3 mb-4">
+            <div class="col-md-12">
+                <label class="form-label">{% trans "Address Line 1" %}</label>
+                <input type="text" name="address_line1" class="form-control">
+            </div>
+            
+            <div class="col-md-12">
+                <label class="form-label">{% trans "Address Line 2" %}</label>
+                <input type="text" name="address_line2" class="form-control">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label">{% trans "City" %}</label>
+                <input type="text" name="city" class="form-control" value="Amman">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label">{% trans "State/Province" %}</label>
+                <input type="text" name="state" class="form-control" value="Amman">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Postal Code" %}</label>
+                <input type="text" name="postal_code" class="form-control">
+            </div>
+            
+            <div class="col-md-12">
+                <label class="form-label">{% trans "Country" %}</label>
+                <input type="text" name="country" class="form-control" value="Jordan">
+            </div>
+        </div>
+        
+        <!-- Emergency Contact Section -->
+        <h6 class="mb-3">{% trans "Emergency Contact" %}</h6>
+        <div class="row g-3 mb-4">
+            <div class="col-md-5">
+                <label class="form-label">{% trans "Contact Name" %}</label>
+                <input type="text" name="emergency_contact_name" class="form-control">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">{% trans "Relationship" %}</label>
+                <input type="text" name="emergency_contact_relationship" class="form-control" placeholder="e.g., Spouse">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="form-label">{% trans "Contact Phone" %}</label>
+                <input type="tel" name="emergency_contact_phone" class="form-control">
+            </div>
+        </div>
+        
+        <!-- Insurance Information Section (Collapsible) -->
+        <details class="mb-4">
+            <summary class="fw-bold mb-2">{% trans "Insurance Information (Optional)" %}</summary>
+            <div class="row g-3 mt-2">
+                <div class="col-md-6">
+                    <label class="form-label">{% trans "Insurance Provider" %}</label>
+                    <input type="text" name="insurance_provider" class="form-control">
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">{% trans "Policy Number" %}</label>
+                    <input type="text" name="insurance_policy_number" class="form-control">
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">{% trans "Insurance Expiry Date" %}</label>
+                    <input type="date" name="insurance_expiry_date" class="form-control">
+                </div>
+            </div>
+        </details>
+        
+        <!-- Medical Flags Section (Collapsible) -->
+        <details class="mb-4">
+            <summary class="fw-bold mb-2">{% trans "Medical Flags (Optional)" %}</summary>
+            <div class="row g-3 mt-2">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input type="checkbox" name="has_allergies" class="form-check-input" id="has_allergies">
+                        <label class="form-check-label" for="has_allergies">{% trans "Has Allergies" %}</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-12" id="allergy_notes_container" style="display: none;">
+                    <label class="form-label">{% trans "Allergy Notes" %}</label>
+                    <textarea name="allergy_notes" class="form-control" rows="2"></textarea>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input type="checkbox" name="has_chronic_conditions" class="form-check-input" id="has_chronic_conditions">
+                        <label class="form-check-label" for="has_chronic_conditions">{% trans "Has Chronic Conditions" %}</label>
+                    </div>
+                </div>
+                
+                <div class="col-md-12" id="chronic_notes_container" style="display: none;">
+                    <label class="form-label">{% trans "Chronic Conditions Notes" %}</label>
+                    <textarea name="chronic_conditions_notes" class="form-control" rows="2"></textarea>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">{% trans "Blood Type" %}</label>
+                    <select name="blood_type" class="form-select">
+                        <option value="unknown">{% trans "Unknown" %}</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+            </div>
+        </details>
+        
+        <!-- General Notes -->
+        <div class="mb-4">
+            <label class="form-label">{% trans "General Notes" %}</label>
+            <textarea name="notes" class="form-control" rows="3"></textarea>
+        </div>
+        
+        <!-- Back-dating feature for receptionists -->
+        {% if request.user.staff_profile.role == 'receptionist' or request.user.is_superuser %}
+        <div class="card mt-4 mb-3 border-warning">
+            <div class="card-header bg-warning bg-opacity-10">
+                <h6 class="mb-0 text-warning">
+                    <i class="fas fa-clock me-2"></i>{% trans "Back-date Registration" %}
+                </h6>
+            </div>
+            <div class="card-body">
+                <label class="form-label">{% trans "Original Registration Date" %}</label>
+                <input type="datetime-local" name="created_at" class="form-control" value="{{ today|date:'Y-m-d' }}T00:00">
+                <small class="text-muted">
+                    {% trans "Use this for patients treated before the system existed. Leave empty for today's date." %}
+                </small>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary touch-btn flex-grow-1">
+                <i class="fas fa-save me-2"></i>{% trans "Save Patient" %}
+            </button>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary touch-btn">
+                {% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- JavaScript to show/hide conditional fields -->
+<script>
+    document.getElementById('has_allergies').addEventListener('change', function() {
+        document.getElementById('allergy_notes_container').style.display = this.checked ? 'block' : 'none';
+    });
+    
+    document.getElementById('has_chronic_conditions').addEventListener('change', function() {
+        document.getElementById('chronic_notes_container').style.display = this.checked ? 'block' : 'none';
+    });
+</script>
+{% endblock %}
