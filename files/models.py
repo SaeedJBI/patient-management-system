@@ -44,12 +44,10 @@ class MedicalFile(models.Model):
         
         # Receptionists - Appointments and notes
         ('appointment', _('Appointment')),
-        ('visit_note', _('Visit Note')),
         
         # Finance - Bills
         ('bill_monthly', _('Monthly Bill')),
         ('bill_yearly', _('Yearly Bill')),
-        ('invoice', _('Invoice')),
         
         # General - Notes (everyone can upload notes)
         ('note', _('General Note')),

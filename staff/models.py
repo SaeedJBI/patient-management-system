@@ -25,8 +25,8 @@ ROLE_CATEGORY_PERMISSIONS = {
     'doctor': ['medical_report', 'note'],  # Only medical reports
     'pharmacist': ['prescription' , 'note'],  # Medicine receipts
     'nutritionist': ['diet_program', 'note'],  # Diet programs
-    'receptionist': ['appointment', 'visit_note', 'consent', 'note'],  # No file uploads except notes
-    'finance': ['bill_monthly', 'bill_yearly', 'invoice'],  # NEW: Finance staff upload bills
+    'receptionist': ['appointment', 'note'],  # No file uploads except notes
+    'finance': ['bill_monthly', 'bill_yearly', 'note'],  # NEW: Finance staff upload bills
     'branch_admin': ['all'],
     'super_admin': ['all'],
 }
@@ -269,7 +269,7 @@ class Staff(models.Model):
         
         # FINANCE see all files (for billing purposes)
         if self.role == 'finance':
-            return base_qs.filter(patient__in=self.get_visible_patients())
+            return base_qs.filter(uploaded_by=self.user)
         
         # RECEPTIONISTS only see files uploaded by receptionists
         if self.role == 'receptionist':

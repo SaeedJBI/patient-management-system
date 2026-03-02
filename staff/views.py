@@ -113,6 +113,9 @@ def dashboard(request):
 def patient_detail(request, patient_id):
     """
     Patient detail view with files grouped by uploader role and category.
+    Different roles see different things:
+    - Finance staff: Only see billing files, no demographics, no upload button
+    - Others: Full access based on their permissions
     """
     user = request.user
     
@@ -123,18 +126,35 @@ def patient_detail(request, patient_id):
     if not user.is_superuser:
         if hasattr(user, 'staff_profile'):
             staff = user.staff_profile
+            
+            # Check if user can view this patient at all
             if not staff.can_view_patient(patient):
                 return render(request, '403.html', status=403)
+            
+            # Store staff role for template
+            user_role = staff.role
         else:
             return render(request, '403.html', status=403)
+    else:
+        user_role = 'super_admin'
+        staff = None
     
-    # Get files using the staff model's get_visible_files method
+    # Get files based on user role and permissions
     if user.is_superuser:
         # Superusers see all files
         files = MedicalFile.objects.filter(patient=patient)
     elif hasattr(user, 'staff_profile'):
         staff = user.staff_profile
-        files = staff.get_visible_files(patient=patient)
+        
+        # FINANCE STAFF - Only see billing files
+        if staff.role == 'finance':
+            files = MedicalFile.objects.filter(
+                patient=patient,
+                category__in=['bill_monthly', 'bill_yearly', 'note']
+            )
+        else:
+            # Other staff use the regular get_visible_files method
+            files = staff.get_visible_files(patient=patient)
     else:
         files = MedicalFile.objects.none()
     
@@ -144,8 +164,12 @@ def patient_detail(request, patient_id):
     # Group files by uploader role first, then by category
     files_by_role_and_category = {}
     
-    # Define all possible roles
-    roles = ['doctor', 'receptionist', 'pharmacist', 'nutritionist', 'finance', 'branch_admin', 'super_admin']
+    # Define roles based on user type
+    if user_role == 'finance':
+        # For finance, only show finance category
+        roles = ['finance']
+    else:
+        roles = ['doctor', 'receptionist', 'pharmacist', 'nutritionist', 'finance', 'branch_admin', 'super_admin']
     
     for role in roles:
         # Get files for this role
@@ -168,14 +192,21 @@ def patient_detail(request, patient_id):
     # Also create the simple role-based querysets for backward compatibility
     files_by_role = {
         'all': files,
-        'doctor': files.filter(uploaded_by__staff_profile__role='doctor'),
-        'receptionist': files.filter(uploaded_by__staff_profile__role='receptionist'),
-        'pharmacist': files.filter(uploaded_by__staff_profile__role='pharmacist'),
-        'nutritionist': files.filter(uploaded_by__staff_profile__role='nutritionist'),
-        'finance': files.filter(uploaded_by__staff_profile__role='finance'),
-        'branch_admin': files.filter(uploaded_by__staff_profile__role='branch_admin'),
-        'super_admin': files.filter(uploaded_by__is_superuser=True),
     }
+    
+    # Add role-specific querysets based on user role
+    if user_role == 'finance':
+        files_by_role['finance'] = files
+    else:
+        files_by_role.update({
+            'doctor': files.filter(uploaded_by__staff_profile__role='doctor'),
+            'receptionist': files.filter(uploaded_by__staff_profile__role='receptionist'),
+            'pharmacist': files.filter(uploaded_by__staff_profile__role='pharmacist'),
+            'nutritionist': files.filter(uploaded_by__staff_profile__role='nutritionist'),
+            'finance': files.filter(uploaded_by__staff_profile__role='finance'),
+            'branch_admin': files.filter(uploaded_by__staff_profile__role='branch_admin'),
+            'super_admin': files.filter(uploaded_by__is_superuser=True),
+        })
     
     # Group by category for the All Files tab
     files_by_category = {}
@@ -188,24 +219,22 @@ def patient_detail(request, patient_id):
     # Get counts for each role
     role_counts = {role: qs.count() for role, qs in files_by_role.items()}
     
-    # Check permissions (existing code)
+    # Check permissions
     can_edit_demographics = False
+    can_modify_created_at = False
+    can_create_patients = False
+    can_upload_files = True  # Default to True
+    
     if user.is_superuser:
         can_edit_demographics = True
-    elif hasattr(user, 'staff_profile'):
-        can_edit_demographics = user.staff_profile.can_edit_demographics()
-    
-    can_modify_created_at = False
-    if user.is_superuser:
         can_modify_created_at = True
-    elif hasattr(user, 'staff_profile'):
-        can_modify_created_at = user.staff_profile.can_modify_created_at()
-    
-    can_create_patients = False
-    if user.is_superuser:
         can_create_patients = True
     elif hasattr(user, 'staff_profile'):
-        can_create_patients = user.staff_profile.can_create_patients()
+        staff = user.staff_profile
+        
+        can_edit_demographics = staff.can_edit_demographics()
+        can_modify_created_at = staff.can_modify_created_at()
+        can_create_patients = staff.can_create_patients()
     
     # Get allowed upload categories
     allowed_categories = []
@@ -214,25 +243,28 @@ def patient_detail(request, patient_id):
         for cat_value, cat_display in MedicalFile.CATEGORY_CHOICES:
             if staff.can_upload_category(cat_value):
                 allowed_categories.append((cat_value, cat_display))
+        
+        # Special case for finance - ensure billing categories are included
+        if staff.role == 'finance':
+            # Make sure billing categories are in the list
+            billing_cats = ['bill_monthly', 'bill_yearly', 'invoice']
+            for cat_value, cat_display in MedicalFile.CATEGORY_CHOICES:
+                if cat_value in billing_cats and (cat_value, cat_display) not in allowed_categories:
+                    allowed_categories.append((cat_value, cat_display))
+                    
     elif user.is_superuser:
         allowed_categories = MedicalFile.CATEGORY_CHOICES
-    
-    # Get user role
-    user_role = None
-    if hasattr(user, 'staff_profile'):
-        user_role = user.staff_profile.role
-    elif user.is_superuser:
-        user_role = 'super_admin'
     
     context = {
         'patient': patient,
         'files_by_role': files_by_role,
         'files_by_category': files_by_category,
-        'files_by_role_and_category': files_by_role_and_category,  # NEW: Nested structure
+        'files_by_role_and_category': files_by_role_and_category,
         'role_counts': role_counts,
         'can_edit_demographics': can_edit_demographics,
         'can_modify_created_at': can_modify_created_at,
         'can_create_patients': can_create_patients,
+        'can_upload_files': can_upload_files,  # New flag for template
         'allowed_categories': allowed_categories,
         'total_files': files.count(),
         'user_role': user_role,
@@ -458,3 +490,4 @@ def receptionist_add_patient(request):
     return render(request, 'staff/receptionist_add_patient.html', {
         'today': timezone.now().date(),
     })
+
