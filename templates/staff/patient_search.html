@@ -13,14 +13,23 @@
     </div>
 </div>
 
-<!-- Search Box -->
-<div class="row mb-4">
+<!-- Search Box with Show All button -->
+<div class="row mb-3">
     <div class="col-12">
-        <input type="text" 
-               id="search-input" 
-               class="mobile-search" 
-               placeholder="{% trans 'Search by name, MRN, national ID, or phone...' %}"
-               autofocus>
+        <div class="d-flex gap-2">
+            <input type="text" 
+                   id="search-input" 
+                   class="mobile-search flex-grow-1" 
+                   placeholder="{% trans 'Search by name, MRN, national ID, or phone...' %}"
+                   autofocus>
+            <button id="show-all-btn" class="btn btn-outline-primary touch-btn" style="width: auto; padding: 0 20px;" onclick="showAllPatients()">
+                <i class="fas fa-list me-2"></i>{% trans "Show All" %}
+            </button>
+        </div>
+        <small class="text-muted mt-1 d-block">
+            <i class="fas fa-info-circle me-1"></i>
+            {% trans "Click 'Show All' to see all patients you have access to" %}
+        </small>
     </div>
 </div>
 
@@ -57,6 +66,18 @@
                         <input type="number" id="age-max" class="form-control" min="0" max="150">
                     </div>
                 </div>
+                
+                <!-- Filter Action Buttons -->
+                <div class="row mt-3">
+                    <div class="col-12 d-flex gap-2 justify-content-end">
+                        <button id="clear-filters-btn" class="btn btn-outline-secondary" onclick="clearFilters()">
+                            <i class="fas fa-times me-2"></i>{% trans "Clear Filters" %}
+                        </button>
+                        <button id="apply-filters-btn" class="btn btn-primary" onclick="applyFilters()">
+                            <i class="fas fa-check me-2"></i>{% trans "Apply Filters" %}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -75,7 +96,7 @@
         <div id="results-container">
             <div class="mobile-card text-center py-5">
                 <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                <p class="text-muted">{% trans "Type at least 2 characters to search" %}</p>
+                <p class="text-muted">{% trans "Type to search, or click 'Show All' to see all patients" %}</p>
             </div>
         </div>
     </div>
@@ -91,6 +112,9 @@
 <script>
 let currentPage = 1;
 let searchTimeout;
+let currentQuery = '';
+let currentFilters = {};
+let currentMode = 'search'; // 'search' or 'showall'
 
 function getFilters() {
     return {
@@ -101,18 +125,102 @@ function getFilters() {
     };
 }
 
+function clearFilters() {
+    // Reset all filter fields to default
+    document.getElementById('branch-filter').value = '';
+    document.getElementById('gender-filter').value = '';
+    document.getElementById('age-min').value = '';
+    document.getElementById('age-max').value = '';
+    
+    // Re-run the current mode with cleared filters
+    if (currentMode === 'showall') {
+        performShowAll(1);
+    } else {
+        const query = document.getElementById('search-input').value;
+        if (query && query.trim().length > 0) {
+            performSearch(1);
+        } else {
+            // Clear results if no query
+            document.getElementById('results-container').innerHTML = 
+                '<div class="mobile-card text-center py-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">{% trans "Type to search, or click Show All to see all patients" %}</p></div>';
+            document.getElementById('search-stats').innerHTML = '';
+            document.getElementById('pagination').innerHTML = '';
+        }
+    }
+}
+
+function applyFilters() {
+    // Apply filters based on current mode
+    if (currentMode === 'showall') {
+        performShowAll(1);
+    } else {
+        const query = document.getElementById('search-input').value;
+        if (query && query.trim().length > 0) {
+            performSearch(1);
+        }
+    }
+}
+
+function showAllPatients() {
+    // Clear search input
+    document.getElementById('search-input').value = '';
+    currentMode = 'showall';
+    performShowAll(1);
+}
+
+function performShowAll(page = 1) {
+    const filters = getFilters();
+    
+    currentQuery = '';
+    currentFilters = filters;
+    currentPage = page;
+    currentMode = 'showall';
+    
+    // Build URL with filters
+    let url = `{% url 'search:show_all' %}?page=${page}`;
+    if (filters.branch) url += `&branch=${filters.branch}`;
+    if (filters.gender) url += `&gender=${filters.gender}`;
+    if (filters.age_min) url += `&age_min=${filters.age_min}`;
+    if (filters.age_max) url += `&age_max=${filters.age_max}`;
+    
+    // Show loading
+    document.getElementById('results-container').innerHTML = 
+        '<div class="text-center py-5"><div class="loading-spinner"></div><p class="mt-3">{% trans "Loading all patients..." %}</p></div>';
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            displayResults(data);
+            updatePaginationShowAll(data);
+        })
+        .catch(error => {
+            document.getElementById('results-container').innerHTML = 
+                '<div class="mobile-card text-center py-5 text-danger">{% trans "An error occurred. Please try again." %}</div>';
+            console.error('Show all error:', error);
+        });
+}
+
 function performSearch(page = 1) {
     const query = document.getElementById('search-input').value;
     const filters = getFilters();
     
-    if (query.length < 2) {
-        document.getElementById('results-container').innerHTML = 
-            '<div class="mobile-card text-center py-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">{% trans "Type at least 2 characters to search" %}</p></div>';
-        document.getElementById('search-stats').innerHTML = '';
+    // Don't search if query is empty
+    if (!query || query.trim().length === 0) {
         return;
     }
     
+    if (query.trim().length < 2) {
+        document.getElementById('results-container').innerHTML = 
+            '<div class="mobile-card text-center py-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">{% trans "Type at least 2 characters to search" %}</p></div>';
+        document.getElementById('search-stats').innerHTML = '';
+        document.getElementById('pagination').innerHTML = '';
+        return;
+    }
+    
+    currentQuery = query;
+    currentFilters = filters;
     currentPage = page;
+    currentMode = 'search';
     
     // Build URL with filters
     let url = `{% url 'search:api' %}?q=${encodeURIComponent(query)}&page=${page}`;
@@ -121,6 +229,7 @@ function performSearch(page = 1) {
     if (filters.age_min) url += `&age_min=${filters.age_min}`;
     if (filters.age_max) url += `&age_max=${filters.age_max}`;
     
+    // Show loading
     document.getElementById('results-container').innerHTML = 
         '<div class="text-center py-5"><div class="loading-spinner"></div><p class="mt-3">{% trans "Searching..." %}</p></div>';
     
@@ -128,11 +237,12 @@ function performSearch(page = 1) {
         .then(response => response.json())
         .then(data => {
             displayResults(data);
-            updatePagination(data);
+            updatePaginationSearch(data);
         })
         .catch(error => {
             document.getElementById('results-container').innerHTML = 
                 '<div class="mobile-card text-center py-5 text-danger">{% trans "An error occurred. Please try again." %}</div>';
+            console.error('Search error:', error);
         });
 }
 
@@ -153,15 +263,15 @@ function displayResults(data) {
         html += `
         <a href="/{{ LANGUAGE_CODE }}/staff/patient/${patient.id}/" class="patient-item text-decoration-none">
             <div class="patient-avatar">
-                ${patient.name.charAt(0)}
+                ${patient.name ? patient.name.charAt(0).toUpperCase() : '?'}
             </div>
             <div class="patient-info">
-                <div class="patient-name">${patient.name}</div>
+                <div class="patient-name">${patient.name || 'Unknown'}</div>
                 <div class="patient-meta">
-                    <span>MRN: ${patient.mrn}</span> • 
-                    <span>${patient.age} yrs</span> • 
-                    <span>${patient.gender}</span> • 
-                    <span>${patient.phone}</span>
+                    <span>MRN: ${patient.mrn || 'N/A'}</span> • 
+                    <span>${patient.age || '?'} yrs</span> • 
+                    <span>${patient.gender || '?'}</span> • 
+                    <span>${patient.phone || 'N/A'}</span>
                 </div>
             </div>
             <i class="fas fa-chevron-right text-muted"></i>
@@ -171,7 +281,15 @@ function displayResults(data) {
     container.innerHTML = html;
 }
 
-function updatePagination(data) {
+function updatePaginationSearch(data) {
+    updatePagination(data, 'performSearch');
+}
+
+function updatePaginationShowAll(data) {
+    updatePagination(data, 'performShowAll');
+}
+
+function updatePagination(data, callbackName) {
     const pagination = document.getElementById('pagination');
     const totalPages = Math.ceil(data.total / data.page_size);
     
@@ -183,40 +301,65 @@ function updatePagination(data) {
     let html = '<div class="d-flex justify-content-center gap-2">';
     
     if (data.page > 1) {
-        html += `<button class="btn btn-sm btn-outline-primary" onclick="performSearch(${data.page - 1})">&laquo;</button>`;
+        html += `<button class="btn btn-sm btn-outline-primary" onclick="${callbackName}(${data.page - 1})">&laquo;</button>`;
     }
     
+    // Show page numbers
     for (let i = 1; i <= totalPages; i++) {
-        if (i === data.page) {
-            html += `<button class="btn btn-sm btn-primary">${i}</button>`;
-        } else if (i === 1 || i === totalPages || (i >= data.page - 2 && i <= data.page + 2)) {
-            html += `<button class="btn btn-sm btn-outline-primary" onclick="performSearch(${i})">${i}</button>`;
+        // Show first page, last page, and pages around current
+        if (i === 1 || i === totalPages || (i >= data.page - 2 && i <= data.page + 2)) {
+            if (i === data.page) {
+                html += `<button class="btn btn-sm btn-primary">${i}</button>`;
+            } else {
+                html += `<button class="btn btn-sm btn-outline-primary" onclick="${callbackName}(${i})">${i}</button>`;
+            }
         } else if (i === data.page - 3 || i === data.page + 3) {
             html += `<span class="btn btn-sm btn-outline-secondary disabled">...</span>`;
         }
     }
     
     if (data.page < totalPages) {
-        html += `<button class="btn btn-sm btn-outline-primary" onclick="performSearch(${data.page + 1})">&raquo;</button>`;
+        html += `<button class="btn btn-sm btn-outline-primary" onclick="${callbackName}(${data.page + 1})">&raquo;</button>`;
     }
     
     html += '</div>';
     pagination.innerHTML = html;
 }
 
-// Search as user types
+// Search as user types (with debounce)
 document.getElementById('search-input').addEventListener('input', function() {
     clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => performSearch(1), 500);
+    const query = this.value;
+    if (query && query.trim().length > 0) {
+        searchTimeout = setTimeout(() => performSearch(1), 500);
+    } else {
+        // Clear results when input is empty
+        document.getElementById('results-container').innerHTML = 
+            '<div class="mobile-card text-center py-5"><i class="fas fa-search fa-3x text-muted mb-3"></i><p class="text-muted">{% trans "Type to search, or click Show All to see all patients" %}</p></div>';
+        document.getElementById('search-stats').innerHTML = '';
+        document.getElementById('pagination').innerHTML = '';
+    }
 });
 
-// Apply filters when changed
-document.getElementById('branch-filter').addEventListener('change', () => performSearch(1));
-document.getElementById('gender-filter').addEventListener('change', () => performSearch(1));
-document.getElementById('age-min').addEventListener('change', () => performSearch(1));
-document.getElementById('age-max').addEventListener('change', () => performSearch(1));
+// Remove automatic filter changes - now handled by Apply button
+// Keep these for backward compatibility but they won't auto-trigger
+document.getElementById('branch-filter').addEventListener('change', function() {
+    // Do nothing - wait for Apply button
+});
 
-// Load branches
+document.getElementById('gender-filter').addEventListener('change', function() {
+    // Do nothing - wait for Apply button
+});
+
+document.getElementById('age-min').addEventListener('change', function() {
+    // Do nothing - wait for Apply button
+});
+
+document.getElementById('age-max').addEventListener('change', function() {
+    // Do nothing - wait for Apply button
+});
+
+// Load branches for filter
 fetch('/{{ LANGUAGE_CODE }}/branches/api/')
     .then(response => response.json())
     .then(branches => {
@@ -227,6 +370,9 @@ fetch('/{{ LANGUAGE_CODE }}/branches/api/')
             option.textContent = `${branch.name} (${branch.code})`;
             select.appendChild(option);
         });
-    });
+    })
+    .catch(error => console.error('Error loading branches:', error));
+
+// Don't load anything on page load - wait for user action
 </script>
 {% endblock %}

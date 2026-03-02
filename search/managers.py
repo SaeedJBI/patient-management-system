@@ -41,14 +41,52 @@ class PatientSearchManager:
     def search(self, query, filters=None, page=1, page_size=20):
         """
         Perform search with fuzzy matching.
+        If query is empty, return all visible patients (with filters applied).
         """
         filters = filters or {}
         
         # Get visible patients
         base_qs = self.get_visible_patients_queryset()
         
-        # Return empty if query too short
-        if not query or len(query.strip()) < 2:
+        # NEW: Handle empty query - return all visible patients
+        if not query or len(query.strip()) == 0:
+            # Apply filters
+            results = base_qs
+            
+            if filters.get('branch'):
+                results = results.filter(branch_id=filters['branch'])
+            
+            if filters.get('gender'):
+                results = results.filter(gender=filters['gender'])
+            
+            if filters.get('age_min'):
+                max_date = timezone.now().date() - timedelta(days=int(filters['age_min'])*365)
+                results = results.filter(date_of_birth__lte=max_date)
+            
+            if filters.get('age_max'):
+                min_date = timezone.now().date() - timedelta(days=int(filters['age_max'])*365)
+                results = results.filter(date_of_birth__gte=min_date)
+            
+            # Order by name
+            results = results.order_by('last_name', 'first_name')
+            
+            # Paginate
+            total = results.count()
+            start = (page - 1) * page_size
+            end = start + page_size
+            paginated_results = results[start:end]
+            
+            return {
+                'results': paginated_results,
+                'total': total,
+                'page': page,
+                'page_size': page_size,
+                'query': query,
+                'filters': filters
+            }
+        
+        # Return empty if query too short (less than 2 chars)
+        if len(query.strip()) < 2:
             return {
                 'results': [],
                 'total': 0,

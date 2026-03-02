@@ -16,27 +16,13 @@
     </div>
 </div>
 
-<!-- Quick Stats -->
+<!-- Quick Stats - Only implemented stats -->
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-4">
+    <div class="col-12">
         <div class="mobile-card text-center p-3">
             <i class="fas fa-users fa-2x text-primary mb-2"></i>
             <h3 class="h5 mb-1">{{ patients_count }}</h3>
-            <small class="text-muted">{% trans "Total Patients" %}</small>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="mobile-card text-center p-3">
-            <i class="fas fa-calendar-check fa-2x text-success mb-2"></i>
-            <h3 class="h5 mb-1">{{ appointments_today|default:"0" }}</h3>
-            <small class="text-muted">{% trans "Today's Appointments" %}</small>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="mobile-card text-center p-3">
-            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
-            <h3 class="h5 mb-1">{{ pending_checkins|default:"0" }}</h3>
-            <small class="text-muted">{% trans "Pending Check-ins" %}</small>
+            <small class="text-muted">{% trans "Total Patients in System" %}</small>
         </div>
     </div>
 </div>
@@ -46,25 +32,20 @@
     <div class="col-12">
         <h5 class="mb-3">{% trans "Quick Actions" %}</h5>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4">
         <a href="{% url 'staff:receptionist_add_patient' %}" class="btn btn-success touch-btn w-100">
             <i class="fas fa-user-plus me-2"></i>{% trans "Add New Patient" %}
         </a>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4">
         <a href="{% url 'staff:patient_search' %}" class="btn btn-outline-primary touch-btn w-100">
             <i class="fas fa-search me-2"></i>{% trans "Find Patient" %}
         </a>
     </div>
-    <div class="col-6 col-md-3">
-        <a href="{% url 'admin:patients_patient_changelist' %}" class="btn btn-outline-info touch-btn w-100">
-            <i class="fas fa-list me-2"></i>{% trans "All Patients" %}
+    <div class="col-6 col-md-4">
+        <a href="{% url 'staff:recent_patients' %}" class="btn btn-outline-info touch-btn w-100">
+            <i class="fas fa-clock me-2"></i>{% trans "Recent Patients" %}
         </a>
-    </div>
-    <div class="col-6 col-md-3">
-        <button class="btn btn-outline-warning touch-btn w-100" onclick="quickCheckIn()">
-            <i class="fas fa-check-circle me-2"></i>{% trans "Quick Check-in" %}
-        </button>
     </div>
 </div>
 
@@ -101,22 +82,4 @@
         {% endif %}
     </div>
 </div>
-
-<!-- Today's Appointments (placeholder) -->
-<div class="row mt-4">
-    <div class="col-12">
-        <h5 class="mb-3">{% trans "Today's Appointments" %}</h5>
-        <div class="mobile-card text-center py-4">
-            <i class="fas fa-calendar-day fa-3x text-muted mb-3"></i>
-            <p class="text-muted mb-0">{% trans "Appointment scheduling coming soon" %}</p>
-        </div>
-    </div>
-</div>
-
-<script>
-function quickCheckIn() {
-    // Implement quick check-in feature
-    alert("Quick check-in feature coming soon!");
-}
-</script>
 {% endblock %}
