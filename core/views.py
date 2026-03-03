@@ -63,11 +63,11 @@ from django.http import HttpResponse
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from io import StringIO
-from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.csrf import csrf_exempt
 
-@staff_member_required
+@csrf_exempt
 def setup_view(request):
-    """Temporary endpoint to run migrations and setup."""
+    """Temporary public endpoint to initialize the database on Render."""
     output = StringIO()
     
     output.write("="*50 + "\n")
@@ -89,17 +89,42 @@ def setup_view(request):
             first_name='Admin',
             last_name='User'
         )
-        output.write("✓ Superuser created (admin@pms.local / admin123)\n\n")
+        output.write("✓ Superuser created\n")
+        output.write("  Email: admin@pms.local\n")
+        output.write("  Password: admin123\n\n")
     else:
         output.write("✓ Superuser already exists\n\n")
     
-    # Run your custom init command
-    output.write("Running init_pms...\n")
-    call_command('init_pms', stdout=output)
-    output.write("✓ Initialization complete\n\n")
+    # Create a default branch if none exists
+    from branches.models import Branch
+    from django.utils import timezone
+    
+    if not Branch.objects.exists():
+        output.write("Creating default branch...\n")
+        admin = User.objects.get(email='admin@pms.local')
+        branch = Branch.objects.create(
+            name='Main Branch',
+            code='MAIN',
+            address='123 Healthcare Street',
+            city='Amman',
+            state='Amman',
+            postal_code='11110',
+            country='Jordan',
+            phone='+962-6-500-0000',
+            email='main@hospital.jo',
+            opened_date=timezone.now().date(),
+            created_by=admin,
+            is_active=True
+        )
+        output.write(f"✓ Branch created: {branch.name} ({branch.code})\n\n")
+    else:
+        output.write("✓ Branch already exists\n\n")
     
     output.write("="*50 + "\n")
     output.write("SETUP COMPLETE\n")
     output.write("="*50 + "\n")
+    output.write("\nYou can now log in with:\n")
+    output.write("- Email: admin@pms.local\n")
+    output.write("- Password: admin123\n")
     
     return HttpResponse(f"<pre>{output.getvalue()}</pre>")
