@@ -1,5 +1,7 @@
 from django.utils import translation
 from django.conf import settings
+from django.shortcuts import redirect
+from django.urls import reverse
 
 
 class UserLanguageMiddleware:
@@ -54,5 +56,25 @@ class UserLanguageMiddleware:
                         httponly=True,
                         samesite='Lax',
                     )
+        
+        return response
+    
+class StaffAdminRedirectMiddleware:
+    """
+    Middleware to redirect staff users away from admin to staff dashboard.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+    
+    def __call__(self, request):
+        response = self.get_response(request)
+        
+        # Check if user is authenticated, is staff but NOT superuser
+        if request.user.is_authenticated and request.user.is_staff and not request.user.is_superuser:
+            # If they're trying to access any admin page
+            if request.path.startswith('/en/admin/') or request.path.startswith('/ar/admin/'):
+                # Redirect them to staff dashboard
+                lang = 'en' if request.path.startswith('/en/') else 'ar'
+                return redirect(f'/{lang}/staff/')
         
         return response

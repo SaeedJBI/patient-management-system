@@ -1,0 +1,82 @@
+{% extends "admin/login.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    #login-form {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    #login-form p {
+        margin-bottom: 15px;
+    }
+    #login-form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        text-align: left;
+    }
+    #login-form input[type="text"],
+    #login-form input[type="password"] {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    .submit-row {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .submit-row input[type="submit"] {
+        background: #417690;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        width: 100%;
+    }
+    .submit-row input[type="submit"]:hover {
+        background: #2b4e6b;
+    }
+    .errornote {
+        max-width: 300px;
+        margin: 10px auto;
+    }
+    .password-reset-link {
+        text-align: center;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form action="{{ app_path }}" method="post" id="login-form">
+        {% csrf_token %}
+        <div class="form-row">
+            <label for="id_username">{% trans 'Username:' %}</label>
+            <input type="text" name="username" id="id_username" class="form-control" required autofocus>
+        </div>
+        <div class="form-row">
+            <label for="id_password">{% trans 'Password:' %}</label>
+            <input type="password" name="password" id="id_password" class="form-control" required>
+        </div>
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="submit-row">
+            <input type="submit" value="{% trans 'Log in' %}">
+        </div>
+    </form>
+    
+    <script>
+    // This will run after the login form submits
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        // Store a flag in sessionStorage that we're coming from admin login
+        sessionStorage.setItem('admin_login', 'true');
+    });
+    </script>
+</div>
+{% endblock %}

@@ -55,6 +55,5 @@ def login_redirect(request):
     if request.user.is_authenticated:
         if request.user.is_superuser:
             return redirect('admin:index')
-        # Use namespaced URL for staff dashboard
         return redirect('staff:dashboard')
     return redirect('admin:login')

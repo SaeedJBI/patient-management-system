@@ -40,6 +40,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'core.middleware.UserLanguageMiddleware',  # AFTER AuthenticationMiddleware
+    'core.middleware.StaffAdminRedirectMiddleware', 
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -136,3 +137,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
 AUTH_USER_MODEL = 'core.User'
+
+LOGIN_REDIRECT_URL = 'core:login_redirect'
