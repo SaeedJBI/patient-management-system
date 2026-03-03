@@ -31,16 +31,31 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-# Static files configuration for production
+# Update MIDDLEWARE to include WhiteNoise (add after SecurityMiddleware)
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this line
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'core.middleware.UserLanguageMiddleware',
+    'core.middleware.StaffAdminRedirectMiddleware',  # Your custom middleware
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# Static files configuration with WhiteNoise
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-
-# Add this to ignore source map files during collection
-STATICFILES_IGNORE_PATTERNS = [
-    '*.map',  # Ignore all source map files
-]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Optional: Add WhiteNoise configuration for better performance
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_MANIFEST_STRICT = False  # This helps with missing files like source maps
+WHITENOISE_ALLOW_ALL_ORIGINS = True
