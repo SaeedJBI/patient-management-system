@@ -57,3 +57,49 @@ def login_redirect(request):
             return redirect('admin:index')
         return redirect('staff:dashboard')
     return redirect('admin:login')
+
+# for production setup
+from django.http import HttpResponse
+from django.core.management import call_command
+from django.contrib.auth import get_user_model
+from io import StringIO
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required
+def setup_view(request):
+    """Temporary endpoint to run migrations and setup."""
+    output = StringIO()
+    
+    output.write("="*50 + "\n")
+    output.write("PMS SETUP SCRIPT\n")
+    output.write("="*50 + "\n\n")
+    
+    # Run migrations
+    output.write("Running migrations...\n")
+    call_command('migrate', stdout=output, interactive=False)
+    output.write("✓ Migrations complete\n\n")
+    
+    # Create superuser if doesn't exist
+    User = get_user_model()
+    if not User.objects.filter(is_superuser=True).exists():
+        output.write("Creating superuser...\n")
+        User.objects.create_superuser(
+            email='admin@pms.local',
+            password='admin123',
+            first_name='Admin',
+            last_name='User'
+        )
+        output.write("✓ Superuser created (admin@pms.local / admin123)\n\n")
+    else:
+        output.write("✓ Superuser already exists\n\n")
+    
+    # Run your custom init command
+    output.write("Running init_pms...\n")
+    call_command('init_pms', stdout=output)
+    output.write("✓ Initialization complete\n\n")
+    
+    output.write("="*50 + "\n")
+    output.write("SETUP COMPLETE\n")
+    output.write("="*50 + "\n")
+    
+    return HttpResponse(f"<pre>{output.getvalue()}</pre>")

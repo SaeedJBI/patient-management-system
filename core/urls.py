@@ -5,4 +5,5 @@ app_name = 'core'  # This is important
 
 urlpatterns = [
     path('set-language/', views.set_language, name='set-language'),
+    path('setup/', views.setup_view, name='setup'),
 ]
