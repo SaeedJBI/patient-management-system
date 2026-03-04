@@ -54,7 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'core.middleware.UserLanguageMiddleware',
-    # 'core.middleware.StaffAdminRedirectMiddleware',  # Temporarily disabled
+    'core.middleware.StaffAdminRedirectMiddleware',  # Temporarily disabled
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
