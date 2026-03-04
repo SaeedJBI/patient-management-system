@@ -4,6 +4,8 @@ Production settings for the PMS project.
 from .base import *
 from decouple import config
 import dj_database_url
+import django
+from django.template import context
 
 # SECURITY WARNING: keep the secret key used in production secret!
 DEBUG = True
@@ -31,6 +33,16 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
+# Temporary workaround for template context issue
+original_copy = context.Context.__copy__
+
+def patched_copy(self):
+    # Create a new context with the same dicts
+    new_context = context.Context(self.dicts)
+    return new_context
+
+context.Context.__copy__ = patched_copy
+
 # Update MIDDLEWARE to include WhiteNoise (add after SecurityMiddleware)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -42,7 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'core.middleware.UserLanguageMiddleware',
-    'core.middleware.StaffAdminRedirectMiddleware',  # Your custom middleware
+    # 'core.middleware.StaffAdminRedirectMiddleware',  # Temporarily disabled
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
