@@ -7,12 +7,68 @@
 {{ block.super }}
 <!-- Font Awesome for admin icons (local - faster loading) -->
 <link href="{% static 'css/fontawesome.min.css' %}" rel="stylesheet">
+
+<style>
+    /* Logo size & alignment (slightly bigger now) */
+    #site-name img {
+        height: 50px;
+        width: auto;
+        vertical-align: middle;
+        margin-right: 12px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+        transition: transform 0.2s ease;
+    }
+    #site-name img:hover {
+        transform: scale(1.05);
+    }
+
+    /* Admin header branding background with reversed gradient (pink left → blue right) */
+    #header {
+        background-color: #FCE4F1; /* fallback for Edge/Safari */
+        background: linear-gradient(90deg, #FCE4F1 0%, #00ADEF 100%);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Admin site title */
+    #site-name a {
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1.3rem;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-align: center;
+        align-items: center;
+    }
+
+    /* Optional: subtle hover on site title */
+    #site-name a:hover {
+        text-decoration: none;
+        color: #ffffff;
+    }
+
+    /* Userlinks modern style */
+    #user-tools {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 5px 12px;
+        margin-right: 12px;
+    }
+    #user-tools a {
+        color: #ffffff;
+        font-weight: 500;
+    }
+</style>
 {% endblock %}
 
 {% block branding %}
 <h1 id="site-name">
     <a href="{% url 'admin:index' %}">
-        <i class="fas fa-hospital me-2"></i>{% translate 'Patient Management System' %}
+        <!-- Logo included here -->
+        <img src="{% static 'images/ibic-logo.jpg' %}" alt="IBIC Logo">
+        {% translate 'IBIC Jordan' %}
     </a>
 </h1>
 {% endblock %}
