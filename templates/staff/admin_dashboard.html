@@ -18,32 +18,18 @@
 
 <!-- Quick Stats -->
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-6">
         <div class="mobile-card text-center p-3">
             <i class="fas fa-users fa-2x text-primary mb-2"></i>
             <h3 class="h5 mb-1">{{ total_patients }}</h3>
             <small class="text-muted">{% trans "Total Patients" %}</small>
         </div>
     </div>
-    <div class="col-6 col-md-3">
-        <div class="mobile-card text-center p-3">
-            <i class="fas fa-file-medical fa-2x text-success mb-2"></i>
-            <h3 class="h5 mb-1">{{ total_files }}</h3>
-            <small class="text-muted">{% trans "Total Files" %}</small>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-6">
         <div class="mobile-card text-center p-3">
             <i class="fas fa-user-md fa-2x text-info mb-2"></i>
             <h3 class="h5 mb-1">{% trans "Admin" %}</h3>
             <small class="text-muted">{% trans "Role" %}</small>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="mobile-card text-center p-3">
-            <i class="fas fa-building fa-2x text-secondary mb-2"></i>
-            <h3 class="h5 mb-1">{{ branches_count|default:"2" }}</h3>
-            <small class="text-muted">{% trans "Branches" %}</small>
         </div>
     </div>
 </div>
