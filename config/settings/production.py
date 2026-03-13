@@ -4,11 +4,13 @@ Production settings for the PMS project.
 from .base import *
 from decouple import config
 import dj_database_url
-import django
-from django.template import context
+
+# Apply compatibility patches for Python 3.14
+from core.compat import apply_patches
+apply_patches()
 
 # SECURITY WARNING: keep the secret key used in production secret!
-DEBUG = True
+DEBUG = False
 
 # Production hosts - set these in Render dashboard
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
@@ -33,19 +35,9 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-# Temporary workaround for template context issue
-# original_copy = context.Context.__copy__
-
-# def patched_copy(self):
-#     # Create a new context with the same dicts
-#     new_context = context.Context(self.dicts)
-#     return new_context
-
-# context.Context.__copy__ = patched_copy
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this line
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -68,5 +60,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # WhiteNoise configuration for better performance
 WHITENOISE_USE_FINDERS = True
-WHITENOISE_MANIFEST_STRICT = False  # This helps with missing files like source maps
+WHITENOISE_MANIFEST_STRICT = False
 WHITENOISE_ALLOW_ALL_ORIGINS = True
