@@ -34,16 +34,15 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 # Temporary workaround for template context issue
-original_copy = context.Context.__copy__
+# original_copy = context.Context.__copy__
 
-def patched_copy(self):
-    # Create a new context with the same dicts
-    new_context = context.Context(self.dicts)
-    return new_context
+# def patched_copy(self):
+#     # Create a new context with the same dicts
+#     new_context = context.Context(self.dicts)
+#     return new_context
 
-context.Context.__copy__ = patched_copy
+# context.Context.__copy__ = patched_copy
 
-# Update MIDDLEWARE to include WhiteNoise (add after SecurityMiddleware)
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this line
@@ -54,7 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'core.middleware.UserLanguageMiddleware',
-    'core.middleware.StaffAdminRedirectMiddleware',  # Temporarily disabled
+    'core.middleware.StaffAdminRedirectMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -67,7 +66,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Optional: Add WhiteNoise configuration for better performance
+# WhiteNoise configuration for better performance
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_MANIFEST_STRICT = False  # This helps with missing files like source maps
 WHITENOISE_ALLOW_ALL_ORIGINS = True
